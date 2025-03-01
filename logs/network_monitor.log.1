@@ -1,64 +1,63 @@
-2025-03-01 16:17:37,385 ERROR: 数据收集出错: (sqlite3.OperationalError) database is locked
+2025-03-01 16:38:33,731 ERROR: 数据收集出错: (sqlite3.OperationalError) database is locked
 [SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740816952.467727, 'high_packet_loss', '设备 核心交换机 (192.168.1.1) 丢包率过高: 9.4% > 5%', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:17:38,158 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (1, 1740816793.08973, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 184.0ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:17:40,736 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
+[parameters: (1, 1740818184.177841, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 191.5ms > 100ms', 'warning', 0, None, None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:352]
+2025-03-01 16:45:17,646 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:45:17,661 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:500]
+2025-03-01 16:45:17,663 ERROR: 数据收集出错: (sqlite3.OperationalError) no such column: device.ssh_enabled
+[SQL: SELECT device.id AS device_id, device.name AS device_name, device.ip_address AS device_ip_address, device.device_type AS device_device_type, device.status AS device_status, device.snmp_community AS device_snmp_community, device.snmp_port AS device_snmp_port, device.location AS device_location, device.description AS device_description, device.last_seen AS device_last_seen, device.os_type AS device_os_type, device.os_version AS device_os_version, device.ssh_enabled AS device_ssh_enabled, device.ssh_username AS device_ssh_username, device.ssh_password AS device_ssh_password, device.ssh_port AS device_ssh_port, device.ssh_key_file AS device_ssh_key_file, device.ssh_last_connected AS device_ssh_last_connected 
+FROM device]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:45:18,360 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:45:18,376 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:500]
+2025-03-01 16:45:18,379 ERROR: 数据收集出错: (sqlite3.OperationalError) no such column: device.ssh_enabled
+[SQL: SELECT device.id AS device_id, device.name AS device_name, device.ip_address AS device_ip_address, device.device_type AS device_device_type, device.status AS device_status, device.snmp_community AS device_snmp_community, device.snmp_port AS device_snmp_port, device.location AS device_location, device.description AS device_description, device.last_seen AS device_last_seen, device.os_type AS device_os_type, device.os_version AS device_os_version, device.ssh_enabled AS device_ssh_enabled, device.ssh_username AS device_ssh_username, device.ssh_password AS device_ssh_password, device.ssh_port AS device_ssh_port, device.ssh_key_file AS device_ssh_key_file, device.ssh_last_connected AS device_ssh_last_connected 
+FROM device]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:45:47,666 ERROR: 数据收集出错: (sqlite3.OperationalError) no such column: device.ssh_enabled
+[SQL: SELECT device.id AS device_id, device.name AS device_name, device.ip_address AS device_ip_address, device.device_type AS device_device_type, device.status AS device_status, device.snmp_community AS device_snmp_community, device.snmp_port AS device_snmp_port, device.location AS device_location, device.description AS device_description, device.last_seen AS device_last_seen, device.os_type AS device_os_type, device.os_version AS device_os_version, device.ssh_enabled AS device_ssh_enabled, device.ssh_username AS device_ssh_username, device.ssh_password AS device_ssh_password, device.ssh_port AS device_ssh_port, device.ssh_key_file AS device_ssh_key_file, device.ssh_last_connected AS device_ssh_last_connected 
+FROM device]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:45:48,382 ERROR: 数据收集出错: (sqlite3.OperationalError) no such column: device.ssh_enabled
+[SQL: SELECT device.id AS device_id, device.name AS device_name, device.ip_address AS device_ip_address, device.device_type AS device_device_type, device.status AS device_status, device.snmp_community AS device_snmp_community, device.snmp_port AS device_snmp_port, device.location AS device_location, device.description AS device_description, device.last_seen AS device_last_seen, device.os_type AS device_os_type, device.os_version AS device_os_version, device.ssh_enabled AS device_ssh_enabled, device.ssh_username AS device_ssh_username, device.ssh_password AS device_ssh_password, device.ssh_port AS device_ssh_port, device.ssh_key_file AS device_ssh_key_file, device.ssh_last_connected AS device_ssh_last_connected 
+FROM device]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:46:22,524 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:46:22,540 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:500]
+2025-03-01 16:47:17,734 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:47:17,751 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:559]
+2025-03-01 16:47:26,337 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:47:26,354 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:559]
+2025-03-01 16:47:27,154 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:47:27,170 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:559]
+2025-03-01 16:48:31,937 INFO: 通过SSH获取了设备信息: 192.168.56.100 [in C:\Users\28637\Desktop\demo1\实例3\app.py:161]
+2025-03-01 16:49:15,962 INFO: 通过SSH获取了设备信息: 192.168.56.100 [in C:\Users\28637\Desktop\demo1\实例3\app.py:161]
+2025-03-01 16:49:23,308 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:49:23,325 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:565]
+2025-03-01 16:50:14,426 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:50:14,442 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:613]
+2025-03-01 16:50:55,846 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:52:14,004 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:52:14,021 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:613]
+2025-03-01 16:52:15,439 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:52:53,058 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:43]
+2025-03-01 16:52:53,077 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:663]
+2025-03-01 16:53:10,214 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:54:29,819 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:55:27,469 ERROR: 数据收集出错: (sqlite3.OperationalError) database is locked
 [SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (2, 1740816860.926593, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 5.8% > 5%', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:17:41,504 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
+[parameters: (2, 1740819222.698362, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 9.6% > 5%', 'warning', 0, None, None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:708]
+2025-03-01 16:55:49,442 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:545]
+2025-03-01 16:55:57,472 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
 [SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (2, 1740816861.668941, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 6.0% > 5%', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:18:50,500 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:18:50,514 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:200]
-2025-03-01 16:18:51,205 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:18:51,218 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:200]
-2025-03-01 16:21:49,660 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:22:15,320 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:22:44,446 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:22:50,807 ERROR: 数据收集出错: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO network_data (device_id, timestamp, cpu_usage, memory_usage, bandwidth_usage, packet_loss, latency, interface_status, system_uptime, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740817310.558164, 0.0, 0.0, 0.0, 2.9104767066352655, 16.639049405381314, None, None, 0)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:23:20,807 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO network_data (device_id, timestamp, cpu_usage, memory_usage, bandwidth_usage, packet_loss, latency, interface_status, system_uptime, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740817310.558164, 0.0, 0.0, 0.0, 2.9104767066352655, 16.639049405381314, None, None, 0)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:23:39,247 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:23:50,809 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO network_data (device_id, timestamp, cpu_usage, memory_usage, bandwidth_usage, packet_loss, latency, interface_status, system_uptime, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740817310.558164, 0.0, 0.0, 0.0, 2.9104767066352655, 16.639049405381314, None, None, 0)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:24:20,810 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO network_data (device_id, timestamp, cpu_usage, memory_usage, bandwidth_usage, packet_loss, latency, interface_status, system_uptime, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740817310.558164, 0.0, 0.0, 0.0, 2.9104767066352655, 16.639049405381314, None, None, 0)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:24:34,017 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:24:50,811 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO network_data (device_id, timestamp, cpu_usage, memory_usage, bandwidth_usage, packet_loss, latency, interface_status, system_uptime, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740817310.558164, 0.0, 0.0, 0.0, 2.9104767066352655, 16.639049405381314, None, None, 0)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:25:20,812 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO network_data (device_id, timestamp, cpu_usage, memory_usage, bandwidth_usage, packet_loss, latency, interface_status, system_uptime, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740817310.558164, 0.0, 0.0, 0.0, 2.9104767066352655, 16.639049405381314, None, None, 0)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:32:02,589 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:32:02,610 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:200]
-2025-03-01 16:32:03,257 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:32:03,275 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:200]
-2025-03-01 16:35:26,522 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:35:27,107 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:245]
-2025-03-01 16:35:59,378 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:35:59,394 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:307]
+[parameters: (2, 1740819222.698362, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 9.6% > 5%', 'warning', 0, None, None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:708]
+2025-03-01 16:56:27,474 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
+[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
+[parameters: (2, 1740819222.698362, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 9.6% > 5%', 'warning', 0, None, None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:708]
+2025-03-01 16:56:57,477 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
+[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
+[parameters: (2, 1740819222.698362, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 9.6% > 5%', 'warning', 0, None, None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:708]

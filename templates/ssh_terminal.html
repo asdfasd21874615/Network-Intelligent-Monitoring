@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}SSH终端 - {{ device.hostname }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    #ssh-terminal {
+        font-family: 'Courier New', monospace;
+        background-color: #000;
+        color: #00ff00;
+        padding: 15px;
+        border-radius: 5px;
+        height: 400px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        margin-bottom: 15px;
+    }
+    
+    #command-input {
+        width: 85%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+    }
+    
+    #send-command {
+        width: 14%;
+        padding: 8px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    #send-command:hover {
+        background-color: #0069d9;
+    }
+    
+    .command-history {
+        margin-top: 20px;
+    }
+    
+    .history-item {
+        margin-bottom: 10px;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .command {
+        font-weight: bold;
+        color: #0066cc;
+    }
+    
+    .timestamp {
+        font-size: 0.8em;
+        color: #6c757d;
+    }
+    
+    .template-commands {
+        margin-top: 20px;
+    }
+    
+    .template-category {
+        margin-bottom: 15px;
+    }
+    
+    .template-button {
+        margin: 3px;
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+    
+    .connection-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 3px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .accordion-button {
+        padding: 0.5rem 1rem;
+    }
+    
+    #loading-indicator {
+        display: none;
+        margin-left: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>SSH终端 - {{ device.hostname }}</h1>
+    <p>
+        IP地址: {{ device.ip_address }} | 
+        SSH用户名: {{ device.ssh_username }} | 
+        SSH端口: {{ device.ssh_port }}
+    </p>
+    
+    <div class="row mb-3">
+        <div class="col">
+            <div id="connection-status" class="connection-status status-disconnected">
+                状态: 未连接
+            </div>
+            <button id="test-connection" class="btn btn-primary">测试连接</button>
+            <button id="clear-terminal" class="btn btn-secondary ml-2">清空终端</button>
+            <span id="loading-indicator">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                处理中...
+            </span>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div id="ssh-terminal">欢迎使用SSH终端。请先测试连接，然后输入命令。</div>
+            
+            <div class="input-group mb-3">
+                <input type="text" id="command-input" class="form-control" placeholder="输入命令..." aria-label="Command">
+                <div class="input-group-append">
+                    <button id="send-command" class="btn btn-primary" type="button">发送</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>命令模板</h5>
+                </div>
+                <div class="card-body">
+                    <div id="command-templates">
+                        <div class="accordion" id="templateAccordion">
+                            <!-- Template categories will be loaded here via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col">
+            <h4>命令历史</h4>
+            <div id="command-history" class="command-history">
+                <!-- Command history will be displayed here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    const deviceId = {{ device.id }};
+    let commandHistory = [];
+    let deviceType = "{{ device.device_type|default('generic_linux', true) }}";
+    
+    // 加载命令模板
+    function loadCommandTemplates() {
+        fetch(`/api/device/${deviceId}/command_templates`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayCommandTemplates(data.templates);
+                } else {
+                    console.error("Failed to load command templates:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error loading command templates:", error);
+            });
+    }
+    
+    // 显示命令模板
+    function displayCommandTemplates(templates) {
+        const accordionEl = document.getElementById('templateAccordion');
+        accordionEl.innerHTML = '';
+        
+        let categoryIndex = 0;
+        for (const category in templates) {
+            const categoryId = `category-${categoryIndex}`;
+            const categoryItem = document.createElement('div');
+            categoryItem.className = 'accordion-item';
+            
+            // Create header
+            const categoryHeader = document.createElement('h2');
+            categoryHeader.className = 'accordion-header';
+            categoryHeader.id = `heading-${categoryId}`;
+            
+            const button = document.createElement('button');
+            button.className = 'accordion-button collapsed';
+            button.type = 'button';
+            button.setAttribute('data-bs-toggle', 'collapse');
+            button.setAttribute('data-bs-target', `#collapse-${categoryId}`);
+            button.setAttribute('aria-expanded', 'false');
+            button.setAttribute('aria-controls', `collapse-${categoryId}`);
+            button.textContent = formatCategoryName(category);
+            
+            categoryHeader.appendChild(button);
+            categoryItem.appendChild(categoryHeader);
+            
+            // Create body
+            const categoryBody = document.createElement('div');
+            categoryBody.id = `collapse-${categoryId}`;
+            categoryBody.className = 'accordion-collapse collapse';
+            categoryBody.setAttribute('aria-labelledby', `heading-${categoryId}`);
+            categoryBody.setAttribute('data-bs-parent', '#templateAccordion');
+            
+            const categoryContent = document.createElement('div');
+            categoryContent.className = 'accordion-body';
+            
+            const commands = templates[category];
+            for (const cmd of commands) {
+                const cmdButton = document.createElement('button');
+                cmdButton.className = 'btn btn-sm btn-outline-secondary template-button';
+                cmdButton.textContent = cmd.name;
+                cmdButton.title = cmd.description;
+                cmdButton.setAttribute('data-command', cmd.command);
+                cmdButton.onclick = function() {
+                    document.getElementById('command-input').value = cmd.command;
+                };
+                
+                categoryContent.appendChild(cmdButton);
+            }
+            
+            categoryBody.appendChild(categoryContent);
+            categoryItem.appendChild(categoryBody);
+            accordionEl.appendChild(categoryItem);
+            
+            categoryIndex++;
+        }
+    }
+    
+    // 格式化类别名称
+    function formatCategoryName(name) {
+        const nameMap = {
+            'system_info': '系统信息',
+            'interface_info': '接口信息',
+            'routing_info': '路由信息',
+            'security_info': '安全信息',
+            'performance_info': '性能信息'
+        };
+        
+        return nameMap[name] || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    
+    // 测试SSH连接
+    document.getElementById('test-connection').addEventListener('click', function() {
+        const statusEl = document.getElementById('connection-status');
+        const loadingEl = document.getElementById('loading-indicator');
+        
+        statusEl.className = 'connection-status';
+        statusEl.textContent = '状态: 正在连接...';
+        loadingEl.style.display = 'inline-block';
+        
+        fetch(`/api/device/${deviceId}/test_ssh_connection`)
+            .then(response => response.json())
+            .then(data => {
+                loadingEl.style.display = 'none';
+                
+                if (data.success) {
+                    statusEl.className = 'connection-status status-connected';
+                    statusEl.textContent = `状态: 已连接`;
+                    
+                    appendToTerminal(`SSH连接成功!`);
+                    
+                    // 如果返回了设备类型，更新并加载模板
+                    if (data.device_type) {
+                        deviceType = data.device_type;
+                        loadCommandTemplates();
+                    }
+                } else {
+                    statusEl.className = 'connection-status status-disconnected';
+                    statusEl.textContent = `状态: 连接失败`;
+                    
+                    appendToTerminal(`SSH连接失败: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                loadingEl.style.display = 'none';
+                statusEl.className = 'connection-status status-disconnected';
+                statusEl.textContent = `状态: 连接错误`;
+                
+                appendToTerminal(`SSH连接错误: ${error.message}`);
+                console.error("Error testing SSH connection:", error);
+            });
+    });
+    
+    // 发送命令
+    document.getElementById('send-command').addEventListener('click', sendCommand);
+    document.getElementById('command-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendCommand();
+        }
+    });
+    
+    function sendCommand() {
+        const commandInput = document.getElementById('command-input');
+        const command = commandInput.value.trim();
+        
+        if (!command) return;
+        
+        const loadingEl = document.getElementById('loading-indicator');
+        loadingEl.style.display = 'inline-block';
+        
+        appendToTerminal(`$ ${command}`, 'input');
+        
+        fetch(`/api/device/${deviceId}/execute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ command: command }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                loadingEl.style.display = 'none';
+                
+                if (data.success) {
+                    appendToTerminal(data.output);
+                    
+                    // 添加到命令历史
+                    addToCommandHistory(command, data.output);
+                } else {
+                    appendToTerminal(`错误: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                loadingEl.style.display = 'none';
+                appendToTerminal(`执行错误: ${error.message}`);
+                console.error("Error executing command:", error);
+            });
+        
+        commandInput.value = '';
+    }
+    
+    // 添加内容到终端
+    function appendToTerminal(text, type = 'output') {
+        const terminal = document.getElementById('ssh-terminal');
+        
+        if (type === 'input') {
+            const inputElement = document.createElement('div');
+            inputElement.className = 'terminal-input';
+            inputElement.textContent = text;
+            terminal.appendChild(inputElement);
+        } else {
+            const outputElement = document.createElement('div');
+            outputElement.className = 'terminal-output';
+            outputElement.textContent = text;
+            terminal.appendChild(outputElement);
+        }
+        
+        // 滚动到底部
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+    
+    // 添加到命令历史
+    function addToCommandHistory(command, output) {
+        const historyItem = {
+            command: command,
+            output: output,
+            timestamp: new Date().toISOString()
+        };
+        
+        commandHistory.unshift(historyItem);
+        
+        // 只保留最近的20条命令
+        if (commandHistory.length > 20) {
+            commandHistory.pop();
+        }
+        
+        updateCommandHistoryDisplay();
+    }
+    
+    // 更新命令历史显示
+    function updateCommandHistoryDisplay() {
+        const historyContainer = document.getElementById('command-history');
+        historyContainer.innerHTML = '';
+        
+        for (const item of commandHistory) {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            
+            const commandElement = document.createElement('div');
+            commandElement.className = 'command';
+            commandElement.textContent = item.command;
+            
+            const timestampElement = document.createElement('div');
+            timestampElement.className = 'timestamp';
+            const formattedDate = new Date(item.timestamp).toLocaleString();
+            timestampElement.textContent = formattedDate;
+            
+            const rerunButton = document.createElement('button');
+            rerunButton.className = 'btn btn-sm btn-outline-primary float-end';
+            rerunButton.textContent = '重新运行';
+            rerunButton.onclick = function() {
+                document.getElementById('command-input').value = item.command;
+            };
+            
+            historyItem.appendChild(rerunButton);
+            historyItem.appendChild(commandElement);
+            historyItem.appendChild(timestampElement);
+            
+            historyContainer.appendChild(historyItem);
+        }
+    }
+    
+    // 清空终端
+    document.getElementById('clear-terminal').addEventListener('click', function() {
+        document.getElementById('ssh-terminal').innerHTML = '';
+    });
+    
+    // 页面加载完成后，加载命令模板
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCommandTemplates();
+    });
+</script>
+{% endblock %}

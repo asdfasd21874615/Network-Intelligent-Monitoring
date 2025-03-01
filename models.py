@@ -36,6 +36,14 @@ class Device(db.Model):
     last_seen = db.Column(db.Float, nullable=True)  # timestamp
     os_type = db.Column(db.String(32), nullable=True)  # linux, ios, windows等
     os_version = db.Column(db.String(64), nullable=True)  # 操作系统版本
+    
+    # SSH连接信息
+    ssh_enabled = db.Column(db.Boolean, default=False)
+    ssh_username = db.Column(db.String(64), nullable=True)
+    ssh_password = db.Column(db.String(128), nullable=True)  # 实际应用中应该加密存储
+    ssh_port = db.Column(db.Integer, default=22)
+    ssh_key_file = db.Column(db.String(256), nullable=True)  # SSH密钥文件路径
+    ssh_last_connected = db.Column(db.Float, nullable=True)  # 上次成功连接的时间戳
 
     network_data = db.relationship('NetworkData', backref='device', lazy='dynamic')
     alerts = db.relationship('Alert', backref='device', lazy='dynamic')

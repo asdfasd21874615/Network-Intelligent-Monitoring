@@ -187,16 +187,32 @@
                 const deviceId = document.getElementById('device-select').value;
                 const issueDescription = document.getElementById('issue-description').value;
                 
-                // 调用诊断接口（模拟）
-                setTimeout(function() {
+                // 调用诊断API
+                generateDiagnostic(deviceId, issueDescription)
+                .then(result => {
                     // 隐藏加载动画
                     document.getElementById('diagnostic-spinner').classList.add('d-none');
                     document.getElementById('diagnostic-submit').removeAttribute('disabled');
                     
                     // 显示结果
                     document.getElementById('diagnostic-result').classList.remove('d-none');
-                    document.getElementById('diagnostic-content').innerHTML = generateDiagnostic(deviceId, issueDescription);
-                }, 2000);
+                    document.getElementById('diagnostic-content').innerHTML = result;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // 隐藏加载动画
+                    document.getElementById('diagnostic-spinner').classList.add('d-none');
+                    document.getElementById('diagnostic-submit').removeAttribute('disabled');
+                    
+                    // 显示错误消息
+                    document.getElementById('diagnostic-result').classList.remove('d-none');
+                    document.getElementById('diagnostic-content').innerHTML = `
+                        <div class="alert alert-danger">
+                            <p><strong>诊断请求失败：</strong> 无法连接诊断服务</p>
+                            <p>请检查网络连接并稍后重试</p>
+                        </div>
+                    `;
+                });
             });
         }
         
@@ -273,69 +289,82 @@
         chatMessages.appendChild(messageDiv);
     }
     
-    // 生成诊断结果（模拟）
+    // 生成诊断结果
     function generateDiagnostic(deviceId, issueDescription) {
-        // 这里是模拟的诊断结果，实际应用中应该调用后端API
-        const issues = [
-            "带宽利用率过高导致的网络拥塞",
-            "DNS解析延迟",
-            "路由表配置错误",
-            "设备CPU使用率过高",
-            "防火墙规则阻止了合法流量",
-            "MAC地址冲突",
-            "网络接口硬件故障"
-        ];
-        
-        const solutions = [
-            "建议实施流量整形和QoS策略，限制非关键应用的带宽使用",
-            "更新DNS服务器配置，或考虑使用本地DNS缓存",
-            "检查并更新路由表，确保路由条目正确",
-            "识别并优化占用CPU资源的进程，或考虑升级硬件",
-            "审核并更新防火墙规则，确保合法流量能够通过",
-            "识别并解决网络中的MAC地址冲突",
-            "检查网卡物理连接，必要时更换硬件"
-        ];
-        
-        const randomIndex = Math.floor(Math.random() * issues.length);
-        const issue = issues[randomIndex];
-        const solution = solutions[randomIndex];
-        
-        return `
-            <p><strong>问题分析：</strong></p>
-            <p>根据您的描述"${issueDescription}"和设备监控数据，系统诊断出可能的问题是：<strong>${issue}</strong>。</p>
-            <p><strong>建议解决方案：</strong></p>
-            <p>${solution}</p>
-            <p><strong>其他建议：</strong></p>
-            <ul>
-                <li>检查设备网络连接的物理状态</li>
-                <li>验证网络配置是否符合预期</li>
-                <li>监控设备性能指标，查看是否存在异常</li>
-            </ul>
-        `;
+        // 调用后端API进行网络诊断
+        return fetch('/api/device/diagnose', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                device_id: deviceId,
+                issue_description: issueDescription
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                return `
+                    <div class="alert alert-danger">
+                        <p><strong>诊断失败：</strong> ${data.message || '未知错误'}</p>
+                    </div>
+                `;
+            }
+            
+            // 构建诊断结果HTML
+            let recommendations = '';
+            if (data.recommendations && data.recommendations.length > 0) {
+                recommendations = '<ul>';
+                data.recommendations.forEach(rec => {
+                    recommendations += `<li>${rec}</li>`;
+                });
+                recommendations += '</ul>';
+            }
+            
+            return `
+                <div class="alert alert-info mb-3">
+                    <p><strong>设备：</strong> ${data.device_name} (${data.device_type})</p>
+                    <p><strong>状态：</strong> <span class="badge ${getBadgeClass(data.device_status)}">${getStatusText(data.device_status)}</span></p>
+                </div>
+                
+                <p><strong>问题分析：</strong></p>
+                <p>${data.diagnosis || '无法分析问题'}</p>
+                
+                <p><strong>建议解决方案：</strong></p>
+                ${recommendations || '<p>无可用的解决方案建议</p>'}
+            `;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            return `
+                <div class="alert alert-danger">
+                    <p><strong>诊断请求失败：</strong> 无法连接诊断服务</p>
+                    <p>请检查网络连接并稍后重试</p>
+                </div>
+            `;
+        });
     }
     
-    // 生成AI回复（模拟）
-    function generateAIResponse(userMessage) {
-        // 这里是模拟的AI回复，实际应用中应该调用DeepSeek API
-        const responses = [
-            "根据历史数据分析，您的网络在工作日上午10点到11点之间流量最高。建议考虑在这个时间段避免进行大型的数据传输作业。",
-            "您的核心交换机在过去一周内出现了3次CPU使用率超过90%的情况，这可能导致网络延迟增加。建议检查是否有异常流量或配置不当导致的资源消耗。",
-            "检测到多个设备的STP拓扑频繁变化，这可能表明网络中存在物理连接不稳定的情况。建议检查网络布线和端口配置。",
-            "您的防火墙日志显示大量来自特定IP地址的连接尝试被拒绝，这可能是潜在的安全威胁。建议进一步调查这些连接尝试的来源和目的。",
-            "监控数据显示，您的主要服务器的响应时间在过去24小时内逐渐增加。建议检查服务器资源使用情况和网络连接状态。",
-            "根据分析，您的网络中有几个设备使用了相同的IP地址，这可能导致连接问题。建议检查DHCP配置并确保所有静态IP分配不重复。"
-        ];
-        
-        // 简单的关键词匹配，实际AI助手会更加智能
-        if (userMessage.toLowerCase().includes('带宽') || userMessage.toLowerCase().includes('流量')) {
-            return "根据当前监控数据，您的网络带宽使用率在过去24小时内平均为45%，峰值为78%（发生在今天上午10:30）。主要流量来源是文件共享和视频会议应用。如果您感觉网络速度变慢，建议实施QoS策略，优先保障关键业务应用的带宽需求。";
-        } else if (userMessage.toLowerCase().includes('延迟') || userMessage.toLowerCase().includes('响应时间')) {
-            return "您的网络平均延迟为15ms，这在大多数情况下是正常的。但监测到在过去一周内，有三次延迟峰值超过100ms，主要发生在广域网连接上。建议检查WAN链路质量，或考虑实施路径优化技术如SD-WAN来提高网络性能。";
-        } else if (userMessage.toLowerCase().includes('安全') || userMessage.toLowerCase().includes('入侵')) {
-            return "系统在过去30天内检测到23次可疑的安全事件，主要集中在尝试SSH暴力破解和异常端口扫描活动。所有这些尝试都被安全策略阻止。建议定期更新防火墙规则，并考虑实施入侵防御系统(IPS)来增强网络安全防护。";
-        } else {
-            // 随机返回一个通用回复
-            return responses[Math.floor(Math.random() * responses.length)];
+    // 获取设备状态对应的徽章样式
+    function getBadgeClass(status) {
+        switch(status) {
+            case 'online': return 'bg-success';
+            case 'offline': return 'bg-secondary';
+            case 'warning': return 'bg-warning text-dark';
+            case 'error': return 'bg-danger';
+            default: return 'bg-info';
+        }
+    }
+    
+    // 获取状态文本
+    function getStatusText(status) {
+        switch(status) {
+            case 'online': return '在线';
+            case 'offline': return '离线';
+            case 'warning': return '警告';
+            case 'error': return '错误';
+            default: return status;
         }
     }
 </script>

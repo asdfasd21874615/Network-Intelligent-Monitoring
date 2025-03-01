@@ -27,8 +27,26 @@
                     </tr>
                     <tr>
                         <th>设备类型</th>
-                        <td>{{ device.device_type }}</td>
+                        <td>
+                            <span id="device-type">{{ device.device_type or "未知" }}</span>
+                            {% if device.ssh_enabled %}
+                            <button id="detect-type-btn" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fas fa-search"></i> 自动检测
+                            </button>
+                            {% endif %}
+                        </td>
                     </tr>
+                    {% if device.ssh_enabled %}
+                    <tr>
+                        <th>SSH连接</th>
+                        <td>
+                            已启用 (端口: {{ device.ssh_port }})
+                            <a href="{{ url_for('ssh_terminal', device_id=device.id) }}" class="btn btn-sm btn-primary ml-2">
+                                <i class="fas fa-terminal"></i> 打开SSH终端
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <th>状态</th>
                         <td>
@@ -57,6 +75,20 @@
                         <th>描述</th>
                         <td>{{ device.description or '无描述' }}</td>
                     </tr>
+                    {% if device.ssh_enabled %}
+                    <tr>
+                        <th>SSH端口</th>
+                        <td>{{ device.ssh_port }}</td>
+                    </tr>
+                    <tr>
+                        <th>SSH用户名</th>
+                        <td>{{ device.ssh_username }}</td>
+                    </tr>
+                    <tr>
+                        <th>SSH密码</th>
+                        <td>{{ device.ssh_password }}</td>
+                    </tr>
+                    {% endif %}
                 </table>
             </div>
             <div class="card-footer">
@@ -162,8 +194,8 @@
                             </tr>
                         </thead>
                         <tbody id="device-alerts">
-                            {% if device.alerts.count() > 0 %}
-                                {% for alert in device.alerts.order_by(Alert.timestamp.desc()).limit(10).all() %}
+                            {% if alerts and alerts|length > 0 %}
+                                {% for alert in alerts %}
                                 <tr>
                                     <td>{{ moment(alert.timestamp|timestamp_to_datetime).format('YYYY-MM-DD HH:mm:ss') }}</td>
                                     <td>{{ alert.alert_type }}</td>
@@ -209,9 +241,55 @@
         </div>
     </div>
 </div>
+
+{% if device.ssh_enabled %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>SSH终端</span>
+                <span class="badge {% if device.ssh_last_connected %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if device.ssh_last_connected %}上次连接: {{ device.ssh_last_connected|timestamp_to_datetime|datetime }}{% else %}从未连接{% endif %}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="ssh-command" placeholder="输入命令...例如: ls -la, uptime" />
+                                <button class="btn btn-primary" id="execute-command">执行</button>
+                            </div>
+                            <small class="text-muted">注意: 只能执行查询类命令，修改系统设置的命令可能会被拒绝</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{{ url_for('ssh_terminal', device_id=device.id) }}" class="btn btn-success">
+                            <i class="fas fa-terminal"></i> 打开完整SSH终端
+                        </a>
+                    </div>
+                </div>
+                
+                <div id="terminal-output" class="terminal p-3 mb-3 bg-dark text-light" style="height: 300px; overflow-y: auto; font-family: monospace;">
+                    <div id="output-content">
+                        <p><span class="text-success">$</span> 连接到 {{ device.name }} ({{ device.ip_address }})</p>
+                        <p>输入命令并点击执行按钮，或按回车键。</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="clear-terminal">清空终端</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="test-connection">测试连接</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // 设备ID
     const deviceId = {{ device.id }};
@@ -224,6 +302,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         // 初始化图表
         initPerformanceChart();
+        
+        // 设备类型检测
+        detectDeviceType();
         
         // 获取设备数据
         fetchDeviceData();
@@ -252,6 +333,118 @@
                 resolveAlert(alertId);
             });
         });
+        
+        {% if device.ssh_enabled %}
+        // SSH命令执行
+        const commandInput = document.getElementById('ssh-command');
+        const executeButton = document.getElementById('execute-command');
+        const terminalOutput = document.getElementById('output-content');
+        const clearTerminalButton = document.getElementById('clear-terminal');
+        const testConnectionButton = document.getElementById('test-connection');
+        
+        // 执行命令
+        executeButton.addEventListener('click', function() {
+            executeSSHCommand();
+        });
+        
+        // 回车执行命令
+        commandInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                executeSSHCommand();
+            }
+        });
+        
+        // 清空终端
+        clearTerminalButton.addEventListener('click', function() {
+            terminalOutput.innerHTML = '<p><span class="text-success">$</span> 终端已清空</p>';
+        });
+        
+        // 测试连接
+        testConnectionButton.addEventListener('click', function() {
+            fetch('/api/device/{{ device.id }}/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    command: 'echo "SSH连接测试成功"'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    terminalOutput.innerHTML += `<p><span class="text-success">$</span> 连接测试结果: <span class="text-success">成功</span></p>`;
+                } else {
+                    terminalOutput.innerHTML += `<p><span class="text-danger">$</span> 连接测试结果: <span class="text-danger">失败</span> - ${data.error}</p>`;
+                }
+            })
+            .catch(error => {
+                terminalOutput.innerHTML += `<p><span class="text-danger">$</span> 请求错误: ${error}</p>`;
+            });
+        });
+        
+        function executeSSHCommand() {
+            const command = commandInput.value.trim();
+            if (!command) return;
+            
+            // 显示命令
+            terminalOutput.innerHTML += `<p><span class="text-success">$</span> ${command}</p>`;
+            
+            // 禁用输入，显示加载状态
+            commandInput.disabled = true;
+            executeButton.disabled = true;
+            executeButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 执行中...';
+            
+            // 发送命令到服务器
+            fetch('/api/device/{{ device.id }}/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    command: command
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 输出结果，保留换行符
+                    if (data.output) {
+                        const formattedOutput = data.output.replace(/\n/g, '<br>');
+                        terminalOutput.innerHTML += `<p class="text-light">${formattedOutput}</p>`;
+                    } else {
+                        terminalOutput.innerHTML += `<p class="text-light"><em>命令执行成功，无输出</em></p>`;
+                    }
+                } else {
+                    // 输出错误
+                    terminalOutput.innerHTML += `<p class="text-danger">错误: ${data.error || '执行失败'}</p>`;
+                    if (data.output) {
+                        const formattedOutput = data.output.replace(/\n/g, '<br>');
+                        terminalOutput.innerHTML += `<p class="text-warning">${formattedOutput}</p>`;
+                    }
+                }
+                
+                // 滚动到底部
+                const terminal = document.getElementById('terminal-output');
+                terminal.scrollTop = terminal.scrollHeight;
+            })
+            .catch(error => {
+                terminalOutput.innerHTML += `<p class="text-danger">请求错误: ${error}</p>`;
+            })
+            .finally(() => {
+                // 恢复输入
+                commandInput.disabled = false;
+                executeButton.disabled = false;
+                executeButton.innerHTML = '执行';
+                commandInput.value = '';
+                commandInput.focus();
+                
+                // 滚动到底部
+                const terminal = document.getElementById('terminal-output');
+                terminal.scrollTop = terminal.scrollHeight;
+            });
+        }
+        {% endif %}
     });
     
     // 初始化性能图表
@@ -315,6 +508,52 @@
                     }
                 }
             }
+        });
+    }
+    
+    // 设备类型检测
+    function detectDeviceType() {
+        const detectBtn = document.getElementById('detect-type-btn');
+        if (!detectBtn) return;
+        
+        detectBtn.addEventListener('click', function() {
+            // 显示加载状态
+            detectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检测中...';
+            detectBtn.disabled = true;
+            
+            // 发送检测请求
+            fetch(`/api/device/${deviceId}/detect_type`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 更新设备类型显示
+                    document.getElementById('device-type').textContent = data.device_type;
+                    detectBtn.innerHTML = '<i class="fas fa-check"></i> 检测成功';
+                    setTimeout(() => {
+                        detectBtn.innerHTML = '<i class="fas fa-search"></i> 自动检测';
+                        detectBtn.disabled = false;
+                    }, 3000);
+                } else {
+                    detectBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 检测失败';
+                    setTimeout(() => {
+                        detectBtn.innerHTML = '<i class="fas fa-search"></i> 自动检测';
+                        detectBtn.disabled = false;
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error detecting device type:', error);
+                detectBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 检测失败';
+                setTimeout(() => {
+                    detectBtn.innerHTML = '<i class="fas fa-search"></i> 自动检测';
+                    detectBtn.disabled = false;
+                }, 3000);
+            });
         });
     }
     

@@ -19,6 +19,8 @@ from utils.active_agent import ActiveAgent
 from utils.passive_agent import PassiveAgent
 from utils.alert_manager import AlertManager
 from utils.ai_assistant import DeepSeekAssistant
+from utils.ssh_connector import SSHConnector
+from utils.network_analyzer import NetworkAnalyzer
 
 # 配置日志
 if not os.path.exists('logs'):
@@ -60,6 +62,7 @@ active_agent = ActiveAgent()
 passive_agent = PassiveAgent()
 alert_manager = AlertManager()
 ai_assistant = DeepSeekAssistant(api_key=app.config['DEEPSEEK_API_KEY'])
+network_analyzer = NetworkAnalyzer(alert_manager)
 
 # 用户加载函数
 @login_manager.user_loader
@@ -112,14 +115,196 @@ def add_device():
         ip_address = request.form.get('ip_address')
         device_type = request.form.get('device_type')
         snmp_community = request.form.get('snmp_community')
+        location = request.form.get('location')
+        description = request.form.get('description')
         
-        device = Device(name=name, ip_address=ip_address, 
-                       device_type=device_type, snmp_community=snmp_community)
-        db.session.add(device)
-        db.session.commit()
-        flash('设备添加成功')
-        return redirect(url_for('devices'))
+        # 检查IP地址是否已经存在
+        existing_device = Device.query.filter_by(ip_address=ip_address).first()
+        if existing_device:
+            if 'update_existing' in request.form and request.form.get('update_existing') == '1':
+                # 更新现有设备
+                existing_device.name = name
+                existing_device.device_type = device_type
+                existing_device.snmp_community = snmp_community
+                existing_device.location = location
+                existing_device.description = description
+                existing_device.ssh_enabled = 'ssh_enabled' in request.form
+                existing_device.ssh_username = request.form.get('ssh_username')
+                existing_device.ssh_password = request.form.get('ssh_password')
+                existing_device.ssh_port = request.form.get('ssh_port', 22, type=int)
+                existing_device.ssh_key_file = request.form.get('ssh_key_file')
+                
+                # 如果启用了SSH，尝试获取设备信息
+                if existing_device.ssh_enabled and existing_device.ssh_username and (existing_device.ssh_password or existing_device.ssh_key_file):
+                    try:
+                        ssh = SSHConnector(ip_address, existing_device.ssh_username, existing_device.ssh_port)
+                        
+                        if existing_device.ssh_password:
+                            connected = ssh.connect(password=existing_device.ssh_password)
+                        else:
+                            connected = ssh.connect(key_file=existing_device.ssh_key_file)
+                        
+                        if connected:
+                            # 获取系统信息
+                            system_info = ssh.get_system_info()
+                            
+                            # 更新设备信息
+                            existing_device.os_type = system_info.get('os_type', 'unknown')
+                            existing_device.os_version = system_info.get('os_version', 'unknown')
+                            existing_device.ssh_last_connected = time.time()
+                            existing_device.status = 'online'
+                            
+                            app.logger.info(f"通过SSH获取了设备信息: {existing_device.name}")
+                            ssh.close()
+                        else:
+                            app.logger.warning(f"无法通过SSH连接到设备: {ip_address}")
+                            existing_device.status = 'warning'
+                    except Exception as e:
+                        app.logger.error(f"SSH连接发生错误: {str(e)}")
+                        existing_device.status = 'warning'
+                
+                db.session.commit()
+                flash(f'设备 {name} ({ip_address}) 更新成功', 'success')
+                return redirect(url_for('devices'))
+            else:
+                flash(f'设备添加失败：IP地址 {ip_address} 已经存在。您可以选择更新该设备。', 'danger')
+                return render_template('add_device.html', title='添加设备', 
+                                      existing_device=existing_device,
+                                      form_data=request.form)
+        else:
+            # 获取SSH信息
+            ssh_enabled = 'ssh_enabled' in request.form
+            ssh_username = request.form.get('ssh_username')
+            ssh_password = request.form.get('ssh_password')
+            ssh_port = request.form.get('ssh_port', 22, type=int)
+            ssh_key_file = request.form.get('ssh_key_file')
+            
+            device = Device(
+                name=name, 
+                ip_address=ip_address, 
+                device_type=device_type, 
+                snmp_community=snmp_community,
+                location=location,
+                description=description,
+                # SSH信息
+                ssh_enabled=ssh_enabled,
+                ssh_username=ssh_username,
+                ssh_password=ssh_password,
+                ssh_port=ssh_port,
+                ssh_key_file=ssh_key_file
+            )
+            
+            # 如果启用了SSH，尝试获取设备信息
+            if ssh_enabled and ssh_username and (ssh_password or ssh_key_file):
+                try:
+                    ssh = SSHConnector(ip_address, ssh_username, ssh_port)
+                    
+                    if ssh_password:
+                        connected = ssh.connect(password=ssh_password)
+                    else:
+                        connected = ssh.connect(key_file=ssh_key_file)
+                    
+                    if connected:
+                        # 获取系统信息
+                        system_info = ssh.get_system_info()
+                        
+                        # 更新设备信息
+                        device.os_type = system_info.get('os_type', 'unknown')
+                        device.os_version = system_info.get('os_version', 'unknown')
+                        device.ssh_last_connected = time.time()
+                        device.status = 'online'
+                        
+                        app.logger.info(f"通过SSH获取了设备信息: {device.name}")
+                        ssh.close()
+                    else:
+                        app.logger.warning(f"无法通过SSH连接到设备: {ip_address}")
+                        device.status = 'warning'
+                except Exception as e:
+                    app.logger.error(f"SSH连接发生错误: {str(e)}")
+                    device.status = 'warning'
+            
+            db.session.add(device)
+            db.session.commit()
+            flash('设备添加成功')
+            return redirect(url_for('devices'))
     return render_template('add_device.html', title='添加设备')
+
+# 路由: 编辑设备
+@app.route('/devices/<int:device_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_device(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        ip_address = request.form.get('ip_address')
+        device_type = request.form.get('device_type')
+        snmp_community = request.form.get('snmp_community')
+        location = request.form.get('location')
+        description = request.form.get('description')
+        
+        # 检查IP地址是否已经存在且不是当前设备
+        existing_device = Device.query.filter(Device.ip_address == ip_address, Device.id != device_id).first()
+        if existing_device:
+            flash(f'IP地址 {ip_address} 已被其他设备使用', 'danger')
+            return render_template('edit_device.html', title='编辑设备', device=device)
+            
+        # 更新SSH相关字段
+        ssh_enabled = request.form.get('ssh_enabled') == 'on'
+        ssh_port = int(request.form.get('ssh_port', 22))
+        ssh_username = request.form.get('ssh_username', '')
+        ssh_password = request.form.get('ssh_password', '')
+        ssh_key_file = request.form.get('ssh_key_file', '')
+        
+        # 更新设备信息
+        device.name = name
+        device.ip_address = ip_address
+        device.device_type = device_type
+        device.snmp_community = snmp_community
+        device.location = location
+        device.description = description
+        device.ssh_enabled = ssh_enabled
+        device.ssh_port = ssh_port
+        device.ssh_username = ssh_username
+        
+        # 仅当用户提供了新密码时才更新密码
+        if ssh_password:
+            device.ssh_password = ssh_password
+        
+        # 仅当用户提供了新的密钥文件路径时才更新
+        if ssh_key_file:
+            device.ssh_key_file = ssh_key_file
+        
+        db.session.commit()
+        flash('设备信息已更新', 'success')
+        return redirect(url_for('devices'))
+    
+    return render_template('edit_device.html', title='编辑设备', device=device)
+
+# 路由: 删除设备
+@app.route('/devices/<int:device_id>/delete', methods=['POST'])
+@login_required
+def delete_device(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    try:
+        # 删除设备相关的所有监控数据
+        NetworkData.query.filter_by(device_id=device_id).delete()
+        
+        # 删除设备相关的告警
+        Alert.query.filter_by(device_id=device_id).delete()
+        
+        # 删除设备本身
+        db.session.delete(device)
+        db.session.commit()
+        
+        flash(f'设备 "{device.name}" 已成功删除', 'success')
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"删除设备时出错: {str(e)}")
+        flash(f'删除设备失败: {str(e)}', 'danger')
+    
+    return redirect(url_for('devices'))
 
 # 路由: 设备详情
 @app.route('/devices/<int:device_id>')
@@ -128,7 +313,19 @@ def device_detail(device_id):
     device = Device.query.get_or_404(device_id)
     # 获取该设备的最新监控数据
     recent_data = NetworkData.query.filter_by(device_id=device_id).order_by(NetworkData.timestamp.desc()).limit(100).all()
-    return render_template('device_detail.html', title=device.name, device=device, data=recent_data)
+    # 获取设备相关的告警信息
+    device_alerts = Alert.query.filter_by(device_id=device_id).order_by(Alert.timestamp.desc()).limit(10).all()
+    return render_template('device_detail.html', title=device.name, device=device, data=recent_data, alerts=device_alerts)
+
+# 路由: 设备SSH终端
+@app.route('/device/<int:device_id>/ssh_terminal')
+@login_required
+def ssh_terminal(device_id):
+    device = Device.query.get_or_404(device_id)
+    if not device.ssh_enabled:
+        flash('此设备未启用SSH连接', 'warning')
+        return redirect(url_for('device_detail', device_id=device_id))
+    return render_template('ssh_terminal.html', device=device)
 
 # 路由: 查看警报
 @app.route('/alerts')
@@ -142,7 +339,9 @@ def alerts():
 @app.route('/assistant')
 @login_required
 def assistant():
-    return render_template('ai_assistant.html', title='AI助手')
+    # 获取所有设备列表，用于诊断表单的设备选择
+    devices = Device.query.all()
+    return render_template('ai_assistant.html', title='AI助手', devices=devices)
 
 # API: 与AI助手交互
 @app.route('/api/assistant', methods=['POST'])
@@ -300,6 +499,288 @@ def get_device_data(device_id):
     }
     
     return jsonify(result)
+
+# API: 测试SSH连接
+@app.route('/api/test_ssh_connection', methods=['POST'])
+@login_required
+def test_ssh_connection():
+    data = request.get_json()
+    
+    if not data or not data.get('ip_address') or not data.get('username'):
+        return jsonify({'success': False, 'error': '缺少必要的连接信息'}), 400
+    
+    ip_address = data.get('ip_address')
+    username = data.get('username')
+    password = data.get('password')
+    port = data.get('port', 22)
+    key_file = data.get('key_file')
+    
+    if not password and not key_file:
+        return jsonify({'success': False, 'error': '需要提供密码或密钥文件'}), 400
+    
+    try:
+        # 创建SSH连接器
+        ssh = SSHConnector(ip_address, username, port)
+        
+        # 尝试连接
+        if password:
+            connected = ssh.connect(password=password)
+        else:
+            connected = ssh.connect(key_file=key_file)
+        
+        if connected:
+            # 测试连接是否可用
+            if ssh.test_connection():
+                # 尝试获取一些基本系统信息
+                system_info = ssh.get_system_info()
+                
+                ssh.close()
+                
+                return jsonify({
+                    'success': True, 
+                    'message': '连接成功', 
+                    'system_info': system_info
+                })
+            else:
+                ssh.close()
+                return jsonify({'success': False, 'error': '无法执行命令'})
+        else:
+            return jsonify({'success': False, 'error': '连接失败，请检查凭据'})
+    
+    except Exception as e:
+        app.logger.error(f"测试SSH连接时出错: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+# API: 在设备上执行SSH命令
+@app.route('/api/device/<int:device_id>/execute', methods=['POST'])
+@login_required
+def execute_device_command(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    if not device.ssh_enabled:
+        return jsonify({'success': False, 'error': '此设备未启用SSH连接'}), 400
+    
+    data = request.get_json()
+    command = data.get('command')
+    
+    if not command:
+        return jsonify({'success': False, 'error': '缺少命令参数'}), 400
+    
+    try:
+        # 创建SSH连接器
+        ssh = SSHConnector(device.ip_address, device.ssh_username, device.ssh_port)
+        
+        # 尝试连接
+        if device.ssh_password:
+            connected = ssh.connect(password=device.ssh_password)
+        elif device.ssh_key_file:
+            connected = ssh.connect(key_file=device.ssh_key_file)
+        else:
+            return jsonify({'success': False, 'error': '设备缺少SSH登录凭据'}), 400
+        
+        if connected:
+            # 执行命令
+            exit_code, output, error = ssh.execute_command(command)
+            ssh.close()
+            
+            # 更新设备最后连接时间
+            device.ssh_last_connected = time.time()
+            db.session.commit()
+            
+            return jsonify({
+                'success': exit_code == 0,
+                'exit_code': exit_code,
+                'output': output,
+                'error': error
+            })
+        else:
+            return jsonify({'success': False, 'error': '无法连接到设备'})
+    
+    except Exception as e:
+        app.logger.error(f"执行SSH命令时出错: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+# API: 获取设备命令模板
+@app.route('/api/device/<int:device_id>/command_templates', methods=['GET'])
+@login_required
+def get_command_templates(device_id):
+    from utils.ssh_command_templates import get_all_commands, get_command_categories, get_device_types
+    
+    device = Device.query.get_or_404(device_id)
+    
+    # 默认为Linux设备类型
+    device_type = "linux"
+    
+    # 尝试从设备属性中获取设备类型
+    if hasattr(device, 'device_type') and device.device_type:
+        device_type = device.device_type
+    
+    # 如果设备类型不在支持的列表中，使用默认值
+    if device_type not in get_device_types():
+        device_type = "linux"
+    
+    # 按类别获取命令
+    templates = {}
+    for category in get_command_categories(device_type):
+        from utils.ssh_command_templates import get_commands
+        templates[category] = get_commands(device_type, category)
+    
+    return jsonify({
+        'success': True,
+        'device_id': device_id,
+        'device_type': device_type,
+        'templates': templates
+    })
+
+# API: 测试设备的SSH连接
+@app.route('/api/device/<int:device_id>/test_ssh_connection', methods=['GET'])
+@login_required
+def test_device_ssh_connection(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    if not device.ssh_enabled:
+        return jsonify({'success': False, 'message': '此设备未启用SSH连接'}), 400
+    
+    if not device.ssh_username:
+        return jsonify({'success': False, 'message': '缺少SSH用户名'}), 400
+    
+    if not device.ssh_password and not device.ssh_key_file:
+        return jsonify({'success': False, 'message': '需要提供SSH密码或密钥文件'}), 400
+    
+    try:
+        # 创建SSH连接器
+        ssh = SSHConnector(device.ip_address, device.ssh_username, device.ssh_port)
+        
+        # 尝试连接
+        if device.ssh_password:
+            connected = ssh.connect(password=device.ssh_password, timeout=5)
+        else:
+            connected = ssh.connect(key_file=device.ssh_key_file, timeout=5)
+        
+        if connected:
+            # 测试连接是否可用
+            if ssh.test_connection():
+                # 尝试获取系统信息以检测设备类型
+                system_info = ssh.get_system_info()
+                
+                # 更新最后连接时间
+                device.ssh_last_connected = time.time()
+                
+                # 使用新的设备类型检测方法
+                device_type = ssh.detect_device_type()
+                
+                # 如果成功检测到设备类型且设备当前没有设置类型，则更新设备类型
+                if device_type != "unknown" and (not device.device_type or device.device_type == "unknown"):
+                    device.device_type = device_type
+                
+                db.session.commit()
+                
+                ssh.close()
+                
+                return jsonify({
+                    'success': True,
+                    'message': '连接成功！',
+                    'system_info': system_info,
+                    'device_type': device_type
+                })
+            else:
+                ssh.close()
+                return jsonify({'success': False, 'message': '连接测试失败'})
+        else:
+            return jsonify({'success': False, 'message': '无法建立SSH连接'})
+            
+    except Exception as e:
+        app.logger.error(f"测试SSH连接时出错: {str(e)}")
+        return jsonify({'success': False, 'message': f'连接错误: {str(e)}'})
+
+# API: 自动检测设备类型
+@app.route('/api/device/<int:device_id>/detect_type', methods=['POST'])
+@login_required
+def detect_device_type(device_id):
+    device = Device.query.get_or_404(device_id)
+    
+    if not device.ssh_enabled:
+        return jsonify({'success': False, 'message': '此设备未启用SSH连接，无法检测设备类型'}), 400
+    
+    try:
+        # 创建SSH连接器
+        ssh = SSHConnector(device.ip_address, device.ssh_username, device.ssh_port)
+        
+        # 尝试连接
+        if device.ssh_password:
+            connected = ssh.connect(password=device.ssh_password, timeout=5)
+        else:
+            connected = ssh.connect(key_file=device.ssh_key_file, timeout=5)
+        
+        if not connected:
+            return jsonify({'success': False, 'message': '无法建立SSH连接'}), 400
+        
+        # 检测设备类型
+        device_type = ssh.detect_device_type()
+        
+        if device_type == "unknown":
+            ssh.close()
+            return jsonify({'success': False, 'message': '无法检测设备类型'}), 400
+        
+        # 更新设备类型
+        old_type = device.device_type
+        device.device_type = device_type
+        device.ssh_last_connected = time.time()
+        db.session.commit()
+        
+        ssh.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'设备类型检测成功，从 "{old_type or "未知"}" 更新为 "{device_type}"',
+            'device_type': device_type
+        })
+        
+    except Exception as e:
+        app.logger.error(f"检测设备类型时出错: {str(e)}")
+        return jsonify({'success': False, 'message': f'检测设备类型时出错: {str(e)}'}), 500
+
+# API: 获取设备性能分析
+@app.route('/api/device/<int:device_id>/analysis', methods=['GET'])
+@login_required
+def get_device_analysis(device_id):
+    """获取特定设备的性能分析和建议"""
+    time_range = request.args.get('time_range', 'day')
+    analysis = network_analyzer.analyze_device_performance(device_id, time_range)
+    return jsonify(analysis)
+
+# API: 诊断网络问题
+@app.route('/api/device/diagnose', methods=['POST'])
+@login_required
+def diagnose_device_issue():
+    # 诊断设备网络问题
+    data = request.get_json()
+    device_id = data.get('device_id')
+    issue_description = data.get('issue_description')
+    
+    if not device_id or not issue_description:
+        return jsonify({'success': False, 'message': '设备ID和问题描述为必填项'}), 400
+    
+    # 使用NetworkAnalyzer进行诊断
+    diagnosis_result = network_analyzer.diagnose_network_issue(device_id, issue_description)
+    return jsonify(diagnosis_result)
+
+# 路由: 网络分析与建议
+@app.route('/network_analysis')
+@login_required
+def network_analysis():
+    """显示网络分析和优化建议页面"""
+    health_data = network_analyzer.analyze_network_health()
+    optimization_suggestions = network_analyzer.get_optimization_suggestions()
+    
+    # 获取所有设备以便用户选择查看详细分析
+    devices = Device.query.all()
+    
+    return render_template('network_analysis.html', 
+                           title='网络分析与建议',
+                           health_data=health_data,
+                           devices=devices,
+                           suggestions=optimization_suggestions)
 
 # 数据收集后台任务
 def collect_data():

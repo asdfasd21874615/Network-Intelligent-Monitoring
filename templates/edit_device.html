@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}添加设备 - 网络智能监控平台{% endblock %}
+{% block title %}编辑设备 - 网络智能监控平台{% endblock %}
 
-{% block header %}添加设备{% endblock %}
+{% block header %}编辑设备{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -23,25 +23,11 @@
                 {% endif %}
                 {% endwith %}
                 
-                {% if existing_device %}
-                <div class="alert alert-warning" role="alert">
-                    <h5>检测到已存在的设备！</h5>
-                    <p>IP地址 <strong>{{ existing_device.ip_address }}</strong> 已经存在于设备 <strong>{{ existing_device.name }}</strong> 中。</p>
-                    <p>您可以选择更新此设备的信息，或者使用不同的IP地址。</p>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="update_existing" name="update_existing" value="1">
-                        <label class="form-check-label" for="update_existing">
-                            更新现有设备信息
-                        </label>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <form method="POST" action="{{ url_for('add_device') }}">
+                <form method="POST" action="{{ url_for('edit_device', device_id=device.id) }}">
                     <div class="mb-3">
                         <label for="name" class="form-label">设备名称</label>
                         <input type="text" class="form-control" id="name" name="name" 
-                               value="{{ form_data.name if form_data else (existing_device.name if existing_device else '') }}" required>
+                               value="{{ device.name }}" required>
                         <div class="form-text">为设备指定一个易于识别的名称</div>
                     </div>
                     
@@ -49,7 +35,7 @@
                         <label for="ip_address" class="form-label">IP地址</label>
                         <input type="text" class="form-control" id="ip_address" name="ip_address" 
                                pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" 
-                               value="{{ form_data.ip_address if form_data else (existing_device.ip_address if existing_device else '') }}"
+                               value="{{ device.ip_address }}"
                                placeholder="例如：192.168.1.1" required>
                         <div class="form-text">设备的IP地址，格式为四段点分十进制</div>
                     </div>
@@ -58,19 +44,19 @@
                         <label for="device_type" class="form-label">设备类型</label>
                         <select class="form-select" id="device_type" name="device_type" required>
                             <option value="">请选择...</option>
-                            <option value="router" {% if (form_data and form_data.device_type == 'router') or (existing_device and existing_device.device_type == 'router') %}selected{% endif %}>路由器</option>
-                            <option value="switch" {% if (form_data and form_data.device_type == 'switch') or (existing_device and existing_device.device_type == 'switch') %}selected{% endif %}>交换机</option>
-                            <option value="firewall" {% if (form_data and form_data.device_type == 'firewall') or (existing_device and existing_device.device_type == 'firewall') %}selected{% endif %}>防火墙</option>
-                            <option value="server" {% if (form_data and form_data.device_type == 'server') or (existing_device and existing_device.device_type == 'server') %}selected{% endif %}>服务器</option>
-                            <option value="workstation" {% if (form_data and form_data.device_type == 'workstation') or (existing_device and existing_device.device_type == 'workstation') %}selected{% endif %}>工作站</option>
-                            <option value="other" {% if (form_data and form_data.device_type == 'other') or (existing_device and existing_device.device_type == 'other') %}selected{% endif %}>其他</option>
+                            <option value="router" {% if device.device_type == 'router' %}selected{% endif %}>路由器</option>
+                            <option value="switch" {% if device.device_type == 'switch' %}selected{% endif %}>交换机</option>
+                            <option value="firewall" {% if device.device_type == 'firewall' %}selected{% endif %}>防火墙</option>
+                            <option value="server" {% if device.device_type == 'server' %}selected{% endif %}>服务器</option>
+                            <option value="workstation" {% if device.device_type == 'workstation' %}selected{% endif %}>工作站</option>
+                            <option value="other" {% if device.device_type == 'other' %}selected{% endif %}>其他</option>
                         </select>
                     </div>
                     
                     <div class="mb-3">
                         <label for="snmp_community" class="form-label">SNMP社区字符串</label>
                         <input type="text" class="form-control" id="snmp_community" name="snmp_community" 
-                               value="{{ form_data.snmp_community if form_data else (existing_device.snmp_community if existing_device else '') }}" 
+                               value="{{ device.snmp_community }}" 
                                placeholder="例如：public">
                         <div class="form-text">如果设备支持SNMP，请输入SNMP社区字符串（通常为"public"或"private"）</div>
                     </div>
@@ -80,35 +66,35 @@
                     
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="ssh_enabled" name="ssh_enabled" value="1" 
-                               {% if (form_data and form_data.ssh_enabled) or (existing_device and existing_device.ssh_enabled) %}checked{% endif %}>
+                               {% if device.ssh_enabled %}checked{% endif %}>
                         <label class="form-check-label" for="ssh_enabled">启用SSH连接</label>
                     </div>
                     
-                    <div id="ssh-credentials-section" style="display: {% if (form_data and form_data.ssh_enabled) or (existing_device and existing_device.ssh_enabled) %}block{% else %}none{% endif %};">
+                    <div id="ssh-credentials-section" style="display: {% if device.ssh_enabled %}block{% else %}none{% endif %};">
                         <div class="mb-3">
                             <label for="ssh_username" class="form-label">SSH用户名</label>
                             <input type="text" class="form-control" id="ssh_username" name="ssh_username" 
-                                   value="{{ form_data.ssh_username if form_data else (existing_device.ssh_username if existing_device else '') }}" 
+                                   value="{{ device.ssh_username }}" 
                                    placeholder="例如：admin">
                         </div>
                         
                         <div class="mb-3">
                             <label for="ssh_password" class="form-label">SSH密码</label>
                             <input type="password" class="form-control" id="ssh_password" name="ssh_password">
-                            <div class="form-text">出于安全考虑，建议使用SSH密钥认证而非密码</div>
+                            <div class="form-text">出于安全考虑，密码不会显示。如需更改，请输入新密码，否则将保留原密码。</div>
                         </div>
                         
                         <div class="mb-3">
                             <label for="ssh_port" class="form-label">SSH端口</label>
                             <input type="number" class="form-control" id="ssh_port" name="ssh_port" 
-                                   value="{{ form_data.ssh_port if form_data else (existing_device.ssh_port if existing_device else 22) }}" 
+                                   value="{{ device.ssh_port }}" 
                                    min="1" max="65535">
                         </div>
                         
                         <div class="mb-3">
                             <label for="ssh_key_file" class="form-label">SSH密钥文件（可选）</label>
                             <input type="text" class="form-control" id="ssh_key_file" name="ssh_key_file" 
-                                   value="{{ form_data.ssh_key_file if form_data else (existing_device.ssh_key_file if existing_device else '') }}" 
+                                   value="{{ device.ssh_key_file }}" 
                                    placeholder="例如：/path/to/key.pem">
                             <div class="form-text">如果使用SSH密钥认证，请输入密钥文件的绝对路径</div>
                         </div>
@@ -124,18 +110,18 @@
                     <div class="mb-3">
                         <label for="location" class="form-label">位置</label>
                         <input type="text" class="form-control" id="location" name="location" 
-                               value="{{ form_data.location if form_data else (existing_device.location if existing_device else '') }}" 
+                               value="{{ device.location }}" 
                                placeholder="例如：数据中心A区">
                     </div>
                     
                     <div class="mb-3">
                         <label for="description" class="form-label">描述</label>
-                        <textarea class="form-control" id="description" name="description" rows="3">{{ form_data.description if form_data else (existing_device.description if existing_device else '') }}</textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ device.description }}</textarea>
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{{ url_for('devices') }}" class="btn btn-secondary me-md-2">取消</a>
-                        <button type="submit" class="btn btn-primary">添加设备</button>
+                        <button type="submit" class="btn btn-primary">保存更改</button>
                     </div>
                 </form>
             </div>

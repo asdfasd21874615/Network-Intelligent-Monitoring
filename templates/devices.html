@@ -23,6 +23,7 @@
                         <th>类型</th>
                         <th>状态</th>
                         <th>最后在线</th>
+                        <th>SSH状态</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -55,21 +56,34 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{{ url_for('device_detail', device_id=device.id) }}" class="btn btn-sm btn-info">
+                                {% if device.ssh_enabled %}
+                                    <span class="badge {% if device.ssh_last_connected %}bg-success">已连接
+                                    {% else %}bg-warning">已启用{% endif %}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">未启用</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('device_detail', device_id=device.id) }}" class="btn btn-sm btn-info" title="查看详情">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="#" class="btn btn-sm btn-warning">
+                                <a href="{{ url_for('edit_device', device_id=device.id) }}" class="btn btn-sm btn-warning" title="编辑设备">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="#" class="btn btn-sm btn-danger">
+                                <button class="btn btn-sm btn-danger delete-device-btn" data-device-id="{{ device.id }}" data-device-name="{{ device.name }}" title="删除设备">
                                     <i class="fas fa-trash"></i>
-                                </a>
+                                </button>
+                                {% if device.ssh_enabled %}
+                                <button class="btn btn-sm btn-primary test-ssh-btn" data-device-id="{{ device.id }}" title="测试SSH连接">
+                                    <i class="fas fa-terminal"></i>
+                                </button>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="7" class="text-center">暂无设备，请添加一个设备</td>
+                            <td colspan="8" class="text-center">暂无设备，请添加一个设备</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -85,6 +99,62 @@
     document.addEventListener('DOMContentLoaded', function() {
         // 这里可以添加动态更新设备状态的逻辑
         // 例如，通过WebSocket或轮询API获取最新状态
+        
+        // 为所有SSH测试按钮添加点击事件
+        document.querySelectorAll('.test-ssh-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const deviceId = this.getAttribute('data-device-id');
+                const button = this;
+                
+                // 显示测试中状态
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                button.disabled = true;
+                
+                // 调用API测试SSH连接
+                fetch(`/api/device/${deviceId}/test_ssh_connection`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        button.innerHTML = '<i class="fas fa-check"></i>';
+                        button.classList.remove('btn-primary');
+                        button.classList.add('btn-success');
+                        // 3秒后恢复原状
+                        setTimeout(() => {
+                            button.innerHTML = '<i class="fas fa-terminal"></i>';
+                            button.classList.remove('btn-success');
+                            button.classList.add('btn-primary');
+                            button.disabled = false;
+                        }, 3000);
+                    } else {
+                        button.innerHTML = '<i class="fas fa-times"></i>';
+                        button.classList.remove('btn-primary');
+                        button.classList.add('btn-danger');
+                        // 3秒后恢复原状
+                        setTimeout(() => {
+                            button.innerHTML = '<i class="fas fa-terminal"></i>';
+                            button.classList.remove('btn-danger');
+                            button.classList.add('btn-primary');
+                            button.disabled = false;
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error testing SSH connection:', error);
+                    button.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                    button.classList.remove('btn-primary');
+                    button.classList.add('btn-danger');
+                    // 3秒后恢复原状
+                    setTimeout(() => {
+                        button.innerHTML = '<i class="fas fa-terminal"></i>';
+                        button.classList.remove('btn-danger');
+                        button.classList.add('btn-primary');
+                        button.disabled = false;
+                    }, 3000);
+                });
+            });
+        });
     });
 </script>
 {% endblock %}

@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}网络分析与建议 - 网络智能监控平台{% endblock %}
+
+{% block header %}网络分析与建议{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">网络健康概览</h5>
+                <span class="badge 
+                    {% if health_data.status == 'healthy' %}bg-success
+                    {% elif health_data.status == 'warning' %}bg-warning
+                    {% elif health_data.status == 'critical' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+                    {{ health_data.score }}/100
+                </span>
+            </div>
+            <div class="card-body">
+                {% if health_data.device_status.total > 0 %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>设备状态分布</h6>
+                        <div class="progress">
+                            {% if health_data.device_status.online > 0 %}
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ (health_data.device_status.online / health_data.device_status.total * 100) | round }}%" 
+                                 title="在线: {{ health_data.device_status.online }}">
+                                {{ health_data.device_status.online }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if health_data.device_status.warning > 0 %}
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: {{ (health_data.device_status.warning / health_data.device_status.total * 100) | round }}%" 
+                                 title="警告: {{ health_data.device_status.warning }}">
+                                {{ health_data.device_status.warning }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if health_data.device_status.error > 0 %}
+                            <div class="progress-bar bg-danger" role="progressbar" 
+                                 style="width: {{ (health_data.device_status.error / health_data.device_status.total * 100) | round }}%" 
+                                 title="错误: {{ health_data.device_status.error }}">
+                                {{ health_data.device_status.error }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if health_data.device_status.offline > 0 %}
+                            <div class="progress-bar bg-secondary" role="progressbar" 
+                                 style="width: {{ (health_data.device_status.offline / health_data.device_status.total * 100) | round }}%" 
+                                 title="离线: {{ health_data.device_status.offline }}">
+                                {{ health_data.device_status.offline }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2 small">
+                            <span class="badge bg-success">在线: {{ health_data.device_status.online }}</span>
+                            <span class="badge bg-warning">警告: {{ health_data.device_status.warning }}</span>
+                            <span class="badge bg-danger">错误: {{ health_data.device_status.error }}</span>
+                            <span class="badge bg-secondary">离线: {{ health_data.device_status.offline }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="display-4 me-3">
+                                {% if health_data.score >= 80 %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                {% elif health_data.score >= 60 %}
+                                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h4>健康评分: {{ health_data.score }}</h4>
+                                <p class="text-muted">
+                                    {% if health_data.score >= 80 %}
+                                        网络状态良好
+                                    {% elif health_data.score >= 60 %}
+                                        网络存在一些问题
+                                    {% else %}
+                                        网络状态堪忧
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h6 class="mt-4">智能建议:</h6>
+                <ul class="list-group">
+                    {% for recommendation in health_data.recommendations %}
+                    <li class="list-group-item">
+                        <i class="fas fa-lightbulb text-warning me-2"></i> {{ recommendation }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> 尚未添加任何设备，请先添加设备以获取网络健康分析。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">优化建议</h5>
+            </div>
+            <div class="card-body">
+                {% if suggestions %}
+                <ul class="list-group">
+                    {% for suggestion in suggestions %}
+                    <li class="list-group-item">
+                        <i class="fas fa-check-square text-primary me-2"></i> {{ suggestion }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> 暂无优化建议。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">设备性能分析</h5>
+            </div>
+            <div class="card-body">
+                {% if devices %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <select class="form-select" id="device-selector">
+                            <option value="">请选择设备...</option>
+                            {% for device in devices %}
+                            <option value="{{ device.id }}">{{ device.name }} ({{ device.ip_address }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="time-range-selector">
+                            <option value="hour">最近1小时</option>
+                            <option value="day" selected>最近24小时</option>
+                            <option value="week">最近7天</option>
+                            <option value="month">最近30天</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100" id="analyze-button">分析</button>
+                    </div>
+                </div>
+                
+                <div id="device-analysis-container" style="display: none;">
+                    <div class="alert alert-info mb-3" id="analysis-status">
+                        <i class="fas fa-info-circle me-2"></i> 请选择设备并点击"分析"按钮。
+                    </div>
+                    
+                    <div id="analysis-results" style="display: none;">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">CPU使用率</h5>
+                                        <div class="display-4 mb-2" id="cpu-gauge">--</div>
+                                        <p class="mb-0" id="cpu-trend"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">内存使用率</h5>
+                                        <div class="display-4 mb-2" id="memory-gauge">--</div>
+                                        <p class="mb-0" id="memory-trend"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">网络延迟</h5>
+                                        <div class="display-4 mb-2" id="latency-gauge">--</div>
+                                        <p class="mb-0" id="latency-trend"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5>性能建议</h5>
+                        <ul class="list-group mb-3" id="performance-recommendations">
+                        </ul>
+                        
+                        <div class="text-end">
+                            <a href="#" id="device-detail-link" class="btn btn-outline-primary">查看设备详情</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> 尚未添加任何设备，请先添加设备以进行性能分析。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deviceSelector = document.getElementById('device-selector');
+        const timeRangeSelector = document.getElementById('time-range-selector');
+        const analyzeButton = document.getElementById('analyze-button');
+        const deviceAnalysisContainer = document.getElementById('device-analysis-container');
+        const analysisStatus = document.getElementById('analysis-status');
+        const analysisResults = document.getElementById('analysis-results');
+        const deviceDetailLink = document.getElementById('device-detail-link');
+        
+        // CPU, Memory, Latency 指标元素
+        const cpuGauge = document.getElementById('cpu-gauge');
+        const memoryGauge = document.getElementById('memory-gauge');
+        const latencyGauge = document.getElementById('latency-gauge');
+        const cpuTrend = document.getElementById('cpu-trend');
+        const memoryTrend = document.getElementById('memory-trend');
+        const latencyTrend = document.getElementById('latency-trend');
+        
+        // 性能建议列表
+        const performanceRecommendations = document.getElementById('performance-recommendations');
+        
+        analyzeButton.addEventListener('click', function() {
+            const deviceId = deviceSelector.value;
+            const timeRange = timeRangeSelector.value;
+            
+            if (!deviceId) {
+                alert('请先选择一个设备');
+                return;
+            }
+            
+            // 显示容器和状态
+            deviceAnalysisContainer.style.display = 'block';
+            analysisStatus.style.display = 'block';
+            analysisResults.style.display = 'none';
+            analysisStatus.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> 正在分析设备性能，请稍候...';
+            
+            // 发送API请求
+            fetch(`/api/device/${deviceId}/analysis?time_range=${timeRange}`)
+                .then(response => response.json())
+                .then(data => {
+                    analysisStatus.style.display = 'none';
+                    analysisResults.style.display = 'block';
+                    
+                    if (data.error) {
+                        showAnalysisError(data.error);
+                        return;
+                    }
+                    
+                    // 更新设备详情链接
+                    deviceDetailLink.href = `/devices/${deviceId}`;
+                    
+                    // 设置仪表盘值
+                    updateGauge(cpuGauge, data.cpu.avg, data.cpu.status);
+                    updateGauge(memoryGauge, data.memory.avg, data.memory.status);
+                    updateGauge(latencyGauge, data.latency.avg, data.latency.status, 'ms');
+                    
+                    // 设置趋势
+                    updateTrend(cpuTrend, data.cpu.trend, '使用率');
+                    updateTrend(memoryTrend, data.memory.trend, '使用率');
+                    updateTrend(latencyTrend, data.latency.trend, '响应时间');
+                    
+                    // 显示建议
+                    performanceRecommendations.innerHTML = '';
+                    if (data.recommendations && data.recommendations.length > 0) {
+                        data.recommendations.forEach(recommendation => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.innerHTML = `<i class="fas fa-lightbulb text-warning me-2"></i> ${recommendation}`;
+                            performanceRecommendations.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i> 设备性能正常，无优化建议';
+                        performanceRecommendations.appendChild(li);
+                    }
+                })
+                .catch(error => {
+                    showAnalysisError('请求失败: ' + error);
+                });
+        });
+        
+        function showAnalysisError(message) {
+            analysisStatus.style.display = 'block';
+            analysisResults.style.display = 'none';
+            analysisStatus.innerHTML = `<i class="fas fa-exclamation-triangle text-danger me-2"></i> ${message}`;
+        }
+        
+        function updateGauge(element, value, status, unit = '%') {
+            if (value === null || value === undefined) {
+                element.innerHTML = '--';
+                return;
+            }
+            
+            let textClass = 'text-success';
+            if (status === 'warning') {
+                textClass = 'text-warning';
+            } else if (status === 'critical') {
+                textClass = 'text-danger';
+            }
+            
+            element.innerHTML = `<span class="${textClass}">${value}${unit}</span>`;
+        }
+        
+        function updateTrend(element, trend, metricName) {
+            let icon = '';
+            let trendText = '';
+            let textClass = '';
+            
+            if (trend === 'increasing') {
+                icon = '<i class="fas fa-arrow-up"></i>';
+                trendText = `${metricName}上升趋势`;
+                textClass = 'text-danger';
+            } else if (trend === 'decreasing') {
+                icon = '<i class="fas fa-arrow-down"></i>';
+                trendText = `${metricName}下降趋势`;
+                textClass = 'text-success';
+            } else if (trend === 'stable') {
+                icon = '<i class="fas fa-equals"></i>';
+                trendText = `${metricName}稳定`;
+                textClass = 'text-info';
+            } else {
+                icon = '<i class="fas fa-question"></i>';
+                trendText = '无趋势数据';
+                textClass = 'text-muted';
+            }
+            
+            element.className = textClass;
+            element.innerHTML = `${icon} ${trendText}`;
+        }
+    });
+</script>
+{% endblock %}
