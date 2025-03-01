@@ -5,4 +5,8 @@
 ![image](https://github.com/user-attachments/assets/cb3ad550-22d9-4db0-8e5d-be2d2aedaa71)
 仪表盘
 ![image](https://github.com/user-attachments/assets/cc0375f1-113c-4604-95a5-227d743dddd6)
+设备管理中心
+![image](https://github.com/user-attachments/assets/37def621-6076-4ee5-83de-633293fefa14)
+添加设备
+![Uploading image.png…]()
 
