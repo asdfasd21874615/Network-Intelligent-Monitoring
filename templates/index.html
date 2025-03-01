@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘 - 网络智能监控平台{% endblock %}
+
+{% block header %}仪表盘{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">在线设备</h5>
+                <p class="card-text display-4" id="online-devices-count">--</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">警告设备</h5>
+                <p class="card-text display-4" id="warning-devices-count">--</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">错误设备</h5>
+                <p class="card-text display-4" id="error-devices-count">--</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">未解决告警</h5>
+                <p class="card-text display-4" id="unresolved-alerts-count">--</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                网络性能趋势
+            </div>
+            <div class="card-body">
+                <canvas id="network-performance-chart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                设备状态分布
+            </div>
+            <div class="card-body">
+                <canvas id="device-status-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>最近告警</span>
+                <a href="{{ url_for('alerts') }}" class="btn btn-sm btn-primary">查看全部</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>设备</th>
+                                <th>类型</th>
+                                <th>严重性</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-alerts-table">
+                            <tr>
+                                <td colspan="5" class="text-center">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>资源使用率最高的设备</span>
+                <a href="{{ url_for('devices') }}" class="btn btn-sm btn-primary">查看全部</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>设备</th>
+                                <th>CPU</th>
+                                <th>内存</th>
+                                <th>带宽</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-devices-table">
+                            <tr>
+                                <td colspan="5" class="text-center">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 页面加载后初始化图表和数据
+    document.addEventListener('DOMContentLoaded', function() {
+        // 更新仪表盘数据
+        updateDashboardData();
+        
+        // 每30秒更新一次数据
+        setInterval(updateDashboardData, 30000);
+        
+        // 初始化图表
+        initCharts();
+    });
+    
+    // 更新仪表盘数据
+    function updateDashboardData() {
+        // 这里应该从后端API获取数据
+        // 由于API尚未实现，暂时使用模拟数据
+        
+        // 更新设备计数
+        document.getElementById('online-devices-count').textContent = Math.floor(Math.random() * 50) + 20;
+        document.getElementById('warning-devices-count').textContent = Math.floor(Math.random() * 10) + 1;
+        document.getElementById('error-devices-count').textContent = Math.floor(Math.random() * 5);
+        document.getElementById('unresolved-alerts-count').textContent = Math.floor(Math.random() * 15) + 2;
+        
+        // 更新最近告警表格
+        updateRecentAlerts();
+        
+        // 更新资源使用率最高的设备表格
+        updateTopDevices();
+        
+        // 更新图表数据
+        updateChartData();
+    }
+    
+    // 更新最近告警表格
+    function updateRecentAlerts() {
+        // 模拟数据
+        const alertTypes = ['high_cpu', 'high_memory', 'high_bandwidth', 'device_unreachable', 'high_packet_loss'];
+        const severities = ['warning', 'error', 'critical'];
+        const deviceNames = ['Router-01', 'Switch-Core-01', 'Firewall-Main', 'Server-Web-01', 'Server-DB-01'];
+        const statuses = ['未解决', '已解决'];
+        
+        let tableHtml = '';
+        
+        for (let i = 0; i < 5; i++) {
+            const alertType = alertTypes[Math.floor(Math.random() * alertTypes.length)];
+            const severity = severities[Math.floor(Math.random() * severities.length)];
+            const deviceName = deviceNames[Math.floor(Math.random() * deviceNames.length)];
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const time = new Date(Date.now() - Math.floor(Math.random() * 86400000)).toLocaleString();
+            
+            // 根据告警类型设置显示名称
+            let alertTypeName;
+            switch (alertType) {
+                case 'high_cpu': alertTypeName = 'CPU使用率高'; break;
+                case 'high_memory': alertTypeName = '内存使用率高'; break;
+                case 'high_bandwidth': alertTypeName = '带宽使用率高'; break;
+                case 'device_unreachable': alertTypeName = '设备不可达'; break;
+                case 'high_packet_loss': alertTypeName = '丢包率高'; break;
+                default: alertTypeName = alertType;
+            }
+            
+            // 根据严重性设置样式
+            let severityClass;
+            switch (severity) {
+                case 'warning': severityClass = 'text-warning'; break;
+                case 'error': severityClass = 'text-danger'; break;
+                case 'critical': severityClass = 'text-danger fw-bold'; break;
+                default: severityClass = '';
+            }
+            
+            // 生成表格行
+            tableHtml += `
+                <tr>
+                    <td>${time}</td>
+                    <td>${deviceName}</td>
+                    <td>${alertTypeName}</td>
+                    <td class="${severityClass}">${severity}</td>
+                    <td>${status}</td>
+                </tr>
+            `;
+        }
+        
+        document.getElementById('recent-alerts-table').innerHTML = tableHtml;
+    }
+    
+    // 更新资源使用率最高的设备表格
+    function updateTopDevices() {
+        // 模拟数据
+        const deviceNames = ['Router-01', 'Switch-Core-01', 'Firewall-Main', 'Server-Web-01', 'Server-DB-01'];
+        const statuses = ['在线', '警告', '错误'];
+        const statusClasses = ['text-success', 'text-warning', 'text-danger'];
+        
+        let tableHtml = '';
+        
+        for (let i = 0; i < 5; i++) {
+            const deviceName = deviceNames[i];
+            const cpuUsage = Math.floor(Math.random() * 40) + 60; // 60% - 100%
+            const memoryUsage = Math.floor(Math.random() * 30) + 60; // 60% - 90%
+            const bandwidthUsage = Math.floor(Math.random() * 50) + 40; // 40% - 90%
+            
+            // 根据资源使用率确定状态
+            let statusIndex;
+            if (cpuUsage > 90 || memoryUsage > 90 || bandwidthUsage > 90) {
+                statusIndex = 2; // 错误
+            } else if (cpuUsage > 80 || memoryUsage > 80 || bandwidthUsage > 80) {
+                statusIndex = 1; // 警告
+            } else {
+                statusIndex = 0; // 在线
+            }
+            
+            // 生成表格行
+            tableHtml += `
+                <tr>
+                    <td>${deviceName}</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar ${cpuUsage > 80 ? 'bg-danger' : cpuUsage > 60 ? 'bg-warning' : 'bg-success'}" 
+                                 role="progressbar" 
+                                 style="width: ${cpuUsage}%" 
+                                 aria-valuenow="${cpuUsage}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">${cpuUsage}%</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar ${memoryUsage > 80 ? 'bg-danger' : memoryUsage > 60 ? 'bg-warning' : 'bg-success'}" 
+                                 role="progressbar" 
+                                 style="width: ${memoryUsage}%" 
+                                 aria-valuenow="${memoryUsage}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">${memoryUsage}%</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar ${bandwidthUsage > 80 ? 'bg-danger' : bandwidthUsage > 60 ? 'bg-warning' : 'bg-success'}" 
+                                 role="progressbar" 
+                                 style="width: ${bandwidthUsage}%" 
+                                 aria-valuenow="${bandwidthUsage}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">${bandwidthUsage}%</div>
+                        </div>
+                    </td>
+                    <td class="${statusClasses[statusIndex]}">${statuses[statusIndex]}</td>
+                </tr>
+            `;
+        }
+        
+        document.getElementById('top-devices-table').innerHTML = tableHtml;
+    }
+    
+    // 初始化图表
+    let networkPerformanceChart;
+    let deviceStatusChart;
+    
+    function initCharts() {
+        // 网络性能趋势图
+        const networkCtx = document.getElementById('network-performance-chart').getContext('2d');
+        networkPerformanceChart = new Chart(networkCtx, {
+            type: 'line',
+            data: {
+                labels: [], // 时间标签
+                datasets: [
+                    {
+                        label: '平均CPU使用率',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '平均内存使用率',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '平均带宽使用率',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '使用率 (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '时间'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 设备状态分布图
+        const deviceStatusCtx = document.getElementById('device-status-chart').getContext('2d');
+        deviceStatusChart = new Chart(deviceStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['在线', '警告', '错误', '离线'],
+                datasets: [{
+                    data: [70, 15, 10, 5],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)',
+                        'rgba(108, 117, 125, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+    }
+    
+    // 更新图表数据
+    function updateChartData() {
+        // 更新网络性能趋势图
+        // 在实际应用中，应该从后端API获取历史数据
+        
+        // 获取当前时间
+        const now = new Date();
+        const timeLabel = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+        
+        // 添加新数据点
+        networkPerformanceChart.data.labels.push(timeLabel);
+        networkPerformanceChart.data.datasets[0].data.push(Math.floor(Math.random() * 30) + 50); // CPU: 50-80%
+        networkPerformanceChart.data.datasets[1].data.push(Math.floor(Math.random() * 30) + 40); // Memory: 40-70%
+        networkPerformanceChart.data.datasets[2].data.push(Math.floor(Math.random() * 40) + 30); // Bandwidth: 30-70%
+        
+        // 保持最近12个数据点
+        if (networkPerformanceChart.data.labels.length > 12) {
+            networkPerformanceChart.data.labels.shift();
+            networkPerformanceChart.data.datasets.forEach(dataset => dataset.data.shift());
+        }
+        
+        // 更新图表
+        networkPerformanceChart.update();
+        
+        // 更新设备状态分布图
+        deviceStatusChart.data.datasets[0].data = [
+            Math.floor(Math.random() * 30) + 50, // 在线: 50-80
+            Math.floor(Math.random() * 10) + 5,  // 警告: 5-15
+            Math.floor(Math.random() * 5) + 1,   // 错误: 1-6
+            Math.floor(Math.random() * 5) + 3    // 离线: 3-8
+        ];
+        deviceStatusChart.update();
+    }
+</script>
+{% endblock %}

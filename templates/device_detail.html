@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}{{ device.name }} - 网络智能监控平台{% endblock %}
+
+{% block header %}设备详情: {{ device.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                基本信息
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>设备ID</th>
+                        <td>{{ device.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>设备名称</th>
+                        <td>{{ device.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>IP地址</th>
+                        <td>{{ device.ip_address }}</td>
+                    </tr>
+                    <tr>
+                        <th>设备类型</th>
+                        <td>{{ device.device_type }}</td>
+                    </tr>
+                    <tr>
+                        <th>状态</th>
+                        <td>
+                            {% if device.status == 'online' %}
+                            <span class="badge bg-success">在线</span>
+                            {% elif device.status == 'warning' %}
+                            <span class="badge bg-warning">警告</span>
+                            {% elif device.status == 'error' %}
+                            <span class="badge bg-danger">错误</span>
+                            {% elif device.status == 'offline' %}
+                            <span class="badge bg-secondary">离线</span>
+                            {% else %}
+                            <span class="badge bg-secondary">未知</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>SNMP社区</th>
+                        <td>{{ device.snmp_community or '未配置' }}</td>
+                    </tr>
+                    <tr>
+                        <th>位置</th>
+                        <td>{{ device.location or '未指定' }}</td>
+                    </tr>
+                    <tr>
+                        <th>描述</th>
+                        <td>{{ device.description or '无描述' }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-warning">编辑设备</a>
+                <a href="#" class="btn btn-sm btn-danger">删除设备</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>当前性能指标</span>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        时间范围
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item time-range" data-range="hour" href="#">最近1小时</a></li>
+                        <li><a class="dropdown-item time-range" data-range="day" href="#">最近24小时</a></li>
+                        <li><a class="dropdown-item time-range" data-range="week" href="#">最近7天</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">CPU使用率</h5>
+                                <div class="display-4 mb-2" id="cpu-usage">--</div>
+                                <div class="progress">
+                                    <div class="progress-bar" id="cpu-progress" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">内存使用率</h5>
+                                <div class="display-4 mb-2" id="memory-usage">--</div>
+                                <div class="progress">
+                                    <div class="progress-bar" id="memory-progress" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">带宽使用率</h5>
+                                <div class="display-4 mb-2" id="bandwidth-usage">--</div>
+                                <div class="progress">
+                                    <div class="progress-bar" id="bandwidth-progress" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">丢包率</h5>
+                                <div class="display-4 mb-2" id="packet-loss">--</div>
+                                <div class="progress">
+                                    <div class="progress-bar" id="packet-loss-progress" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <canvas id="performance-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                设备告警
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>类型</th>
+                                <th>消息</th>
+                                <th>严重性</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="device-alerts">
+                            {% if device.alerts.count() > 0 %}
+                                {% for alert in device.alerts.order_by(Alert.timestamp.desc()).limit(10).all() %}
+                                <tr>
+                                    <td>{{ moment(alert.timestamp|timestamp_to_datetime).format('YYYY-MM-DD HH:mm:ss') }}</td>
+                                    <td>{{ alert.alert_type }}</td>
+                                    <td>{{ alert.message }}</td>
+                                    <td>
+                                        {% if alert.severity == 'info' %}
+                                        <span class="badge bg-info">信息</span>
+                                        {% elif alert.severity == 'warning' %}
+                                        <span class="badge bg-warning">警告</span>
+                                        {% elif alert.severity == 'error' %}
+                                        <span class="badge bg-danger">错误</span>
+                                        {% elif alert.severity == 'critical' %}
+                                        <span class="badge bg-danger">严重</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ alert.severity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alert.resolved %}
+                                        <span class="badge bg-success">已解决</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">未解决</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not alert.resolved %}
+                                        <button class="btn btn-sm btn-primary resolve-alert-btn" data-alert-id="{{ alert.id }}">
+                                            解决
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">暂无告警</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 设备ID
+    const deviceId = {{ device.id }};
+    // 当前选中的时间范围
+    let currentTimeRange = 'hour';
+    // 性能图表
+    let performanceChart;
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化图表
+        initPerformanceChart();
+        
+        // 获取设备数据
+        fetchDeviceData();
+        
+        // 设置自动刷新（每30秒）
+        setInterval(fetchDeviceData, 30000);
+        
+        // 刷新按钮点击事件
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            fetchDeviceData();
+        });
+        
+        // 时间范围选择事件
+        document.querySelectorAll('.time-range').forEach(function(element) {
+            element.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentTimeRange = this.getAttribute('data-range');
+                fetchDeviceData();
+            });
+        });
+        
+        // 解决告警按钮点击事件
+        document.querySelectorAll('.resolve-alert-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const alertId = this.getAttribute('data-alert-id');
+                resolveAlert(alertId);
+            });
+        });
+    });
+    
+    // 初始化性能图表
+    function initPerformanceChart() {
+        const ctx = document.getElementById('performance-chart').getContext('2d');
+        performanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'CPU使用率 (%)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '内存使用率 (%)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '带宽使用率 (%)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '丢包率 (%)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '百分比'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '时间'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 获取设备数据
+    function fetchDeviceData() {
+        // 在实际应用中，这里应该从API获取数据
+        // 这里使用模拟数据进行演示
+        
+        // 获取API URL
+        const url = `/api/device/${deviceId}/data?range=${currentTimeRange}`;
+        
+        // 模拟API请求延迟
+        setTimeout(function() {
+            // 生成模拟数据
+            const timestamps = [];
+            const cpuData = [];
+            const memoryData = [];
+            const bandwidthData = [];
+            const packetLossData = [];
+            
+            // 根据时间范围生成不同数量的数据点
+            let dataPoints;
+            if (currentTimeRange === 'hour') {
+                dataPoints = 12; // 5分钟一个点
+            } else if (currentTimeRange === 'day') {
+                dataPoints = 24; // 1小时一个点
+            } else {
+                dataPoints = 7; // 1天一个点
+            }
+            
+            // 生成时间标签和数据
+            const now = new Date();
+            for (let i = 0; i < dataPoints; i++) {
+                // 计算时间
+                let time;
+                if (currentTimeRange === 'hour') {
+                    time = new Date(now - (dataPoints - i - 1) * 5 * 60000);
+                    timestamps.push(time.getHours() + ':' + (time.getMinutes() < 10 ? '0' : '') + time.getMinutes());
+                } else if (currentTimeRange === 'day') {
+                    time = new Date(now - (dataPoints - i - 1) * 60 * 60000);
+                    timestamps.push(time.getHours() + ':00');
+                } else {
+                    time = new Date(now - (dataPoints - i - 1) * 24 * 60 * 60000);
+                    timestamps.push((time.getMonth() + 1) + '/' + time.getDate());
+                }
+                
+                // 生成随机数据（保持一定的连续性）
+                const prevCpu = i > 0 ? cpuData[i-1] : Math.floor(Math.random() * 40) + 30;
+                const prevMemory = i > 0 ? memoryData[i-1] : Math.floor(Math.random() * 30) + 40;
+                const prevBandwidth = i > 0 ? bandwidthData[i-1] : Math.floor(Math.random() * 30) + 20;
+                const prevPacketLoss = i > 0 ? packetLossData[i-1] : Math.floor(Math.random() * 5);
+                
+                // 添加一些随机波动
+                cpuData.push(Math.max(0, Math.min(100, prevCpu + (Math.random() * 20 - 10))));
+                memoryData.push(Math.max(0, Math.min(100, prevMemory + (Math.random() * 15 - 7.5))));
+                bandwidthData.push(Math.max(0, Math.min(100, prevBandwidth + (Math.random() * 25 - 12.5))));
+                packetLossData.push(Math.max(0, Math.min(100, prevPacketLoss + (Math.random() * 2 - 1))));
+            }
+            
+            // 更新实时指标数据（使用最新数据点）
+            updateCurrentMetrics(
+                cpuData[cpuData.length - 1],
+                memoryData[memoryData.length - 1],
+                bandwidthData[bandwidthData.length - 1],
+                packetLossData[packetLossData.length - 1]
+            );
+            
+            // 更新图表数据
+            updatePerformanceChart(timestamps, cpuData, memoryData, bandwidthData, packetLossData);
+            
+        }, 300); // 模拟300ms的API延迟
+    }
+    
+    // 更新当前指标
+    function updateCurrentMetrics(cpu, memory, bandwidth, packetLoss) {
+        // 更新CPU使用率
+        document.getElementById('cpu-usage').textContent = cpu.toFixed(1) + '%';
+        const cpuProgress = document.getElementById('cpu-progress');
+        cpuProgress.style.width = cpu + '%';
+        if (cpu > 80) {
+            cpuProgress.className = 'progress-bar bg-danger';
+        } else if (cpu > 60) {
+            cpuProgress.className = 'progress-bar bg-warning';
+        } else {
+            cpuProgress.className = 'progress-bar bg-success';
+        }
+        
+        // 更新内存使用率
+        document.getElementById('memory-usage').textContent = memory.toFixed(1) + '%';
+        const memoryProgress = document.getElementById('memory-progress');
+        memoryProgress.style.width = memory + '%';
+        if (memory > 80) {
+            memoryProgress.className = 'progress-bar bg-danger';
+        } else if (memory > 60) {
+            memoryProgress.className = 'progress-bar bg-warning';
+        } else {
+            memoryProgress.className = 'progress-bar bg-success';
+        }
+        
+        // 更新带宽使用率
+        document.getElementById('bandwidth-usage').textContent = bandwidth.toFixed(1) + '%';
+        const bandwidthProgress = document.getElementById('bandwidth-progress');
+        bandwidthProgress.style.width = bandwidth + '%';
+        if (bandwidth > 80) {
+            bandwidthProgress.className = 'progress-bar bg-danger';
+        } else if (bandwidth > 60) {
+            bandwidthProgress.className = 'progress-bar bg-warning';
+        } else {
+            bandwidthProgress.className = 'progress-bar bg-success';
+        }
+        
+        // 更新丢包率
+        document.getElementById('packet-loss').textContent = packetLoss.toFixed(1) + '%';
+        const packetLossProgress = document.getElementById('packet-loss-progress');
+        packetLossProgress.style.width = packetLoss + '%';
+        if (packetLoss > 5) {
+            packetLossProgress.className = 'progress-bar bg-danger';
+        } else if (packetLoss > 1) {
+            packetLossProgress.className = 'progress-bar bg-warning';
+        } else {
+            packetLossProgress.className = 'progress-bar bg-success';
+        }
+    }
+    
+    // 更新性能图表
+    function updatePerformanceChart(timestamps, cpuData, memoryData, bandwidthData, packetLossData) {
+        // 更新图表数据
+        performanceChart.data.labels = timestamps;
+        performanceChart.data.datasets[0].data = cpuData;
+        performanceChart.data.datasets[1].data = memoryData;
+        performanceChart.data.datasets[2].data = bandwidthData;
+        performanceChart.data.datasets[3].data = packetLossData;
+        
+        // 更新图表
+        performanceChart.update();
+    }
+    
+    // 解决告警
+    function resolveAlert(alertId) {
+        // 在实际应用中，这里应该调用API来解决告警
+        // 这里简单模拟一下效果
+        const button = document.querySelector(`.resolve-alert-btn[data-alert-id="${alertId}"]`);
+        if (button) {
+            const row = button.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(5)');
+            const actionCell = row.querySelector('td:nth-child(6)');
+            
+            // 更新状态
+            statusCell.innerHTML = '<span class="badge bg-success">已解决</span>';
+            
+            // 移除解决按钮
+            actionCell.innerHTML = '';
+            
+            // 显示成功消息
+            alert('告警已成功解决');
+        }
+    }
+</script>
+{% endblock %}

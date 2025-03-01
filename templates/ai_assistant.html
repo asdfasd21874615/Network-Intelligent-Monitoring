@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}AI助手 - 网络智能监控平台{% endblock %}
+
+{% block header %}AI网络助手{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">智能网络分析与建议</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    AI助手通过分析网络设备的历史和实时数据，提供智能化的网络分析和优化建议。
+                </p>
+                
+                <div id="ai-insights-container">
+                    {% if insights %}
+                        {% for insight in insights %}
+                            <div class="alert alert-primary mb-3">
+                                <h5>{{ insight.title }}</h5>
+                                <p>{{ insight.description }}</p>
+                                <small class="text-muted">生成时间: {{ insight.timestamp|timestamp_to_datetime }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h5>暂无洞察</h5>
+                            <p>AI助手尚未生成任何网络洞察。请确保您的网络设备正在被监控，并且有足够的历史数据用于分析。</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">网络诊断</h5>
+            </div>
+            <div class="card-body">
+                <form id="diagnostic-form">
+                    <div class="mb-3">
+                        <label for="device-select" class="form-label">选择设备</label>
+                        <select class="form-select" id="device-select" name="device_id" required>
+                            <option value="" selected disabled>请选择设备</option>
+                            {% if devices %}
+                                {% for device in devices %}
+                                    <option value="{{ device.id }}">{{ device.name }} ({{ device.ip_address }})</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="issue-description" class="form-label">问题描述</label>
+                        <textarea class="form-control" id="issue-description" name="issue_description" rows="3" placeholder="请描述您遇到的网络问题..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="diagnostic-submit">
+                        <span class="spinner-border spinner-border-sm d-none" id="diagnostic-spinner" role="status" aria-hidden="true"></span>
+                        开始诊断
+                    </button>
+                </form>
+                
+                <div class="mt-4 d-none" id="diagnostic-result">
+                    <h5>诊断结果</h5>
+                    <div class="alert alert-info" id="diagnostic-content">
+                        <!-- 诊断结果将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">智能对话</h5>
+            </div>
+            <div class="card-body">
+                <div class="chat-container" id="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message assistant">
+                            <div class="message-content">
+                                <p>您好，我是网络智能助手。我可以帮助您解答网络相关问题、分析网络性能、提供故障排除建议，以及针对您的网络环境提出优化建议。请问有什么可以帮助您的？</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <form id="chat-form">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="chat-input" placeholder="输入您的问题..." autocomplete="off">
+                                <button class="btn btn-primary" type="submit" id="chat-submit">
+                                    <span class="spinner-border spinner-border-sm d-none" id="chat-spinner" role="status" aria-hidden="true"></span>
+                                    发送
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">网络优化建议</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="optimization-accordion">
+                    {% if optimizations %}
+                        {% for optimization in optimizations %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="optimization-heading-{{ loop.index }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#optimization-collapse-{{ loop.index }}" aria-expanded="false" aria-controls="optimization-collapse-{{ loop.index }}">
+                                        {{ optimization.title }}
+                                        {% if optimization.priority == 'high' %}
+                                            <span class="badge bg-danger ms-2">高优先级</span>
+                                        {% elif optimization.priority == 'medium' %}
+                                            <span class="badge bg-warning ms-2">中优先级</span>
+                                        {% else %}
+                                            <span class="badge bg-info ms-2">低优先级</span>
+                                        {% endif %}
+                                    </button>
+                                </h2>
+                                <div id="optimization-collapse-{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="optimization-heading-{{ loop.index }}" data-bs-parent="#optimization-accordion">
+                                    <div class="accordion-body">
+                                        <p>{{ optimization.description }}</p>
+                                        {% if optimization.steps %}
+                                            <h6>建议步骤：</h6>
+                                            <ol>
+                                                {% for step in optimization.steps %}
+                                                    <li>{{ step }}</li>
+                                                {% endfor %}
+                                            </ol>
+                                        {% endif %}
+                                        {% if optimization.benefits %}
+                                            <h6>预期效益：</h6>
+                                            <ul>
+                                                {% for benefit in optimization.benefits %}
+                                                    <li>{{ benefit }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h5>暂无优化建议</h5>
+                            <p>AI助手尚未生成任何网络优化建议。随着更多设备数据的收集，系统将开始提供针对性的优化建议。</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const diagnosticForm = document.getElementById('diagnostic-form');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        
+        // 诊断表单提交事件
+        if (diagnosticForm) {
+            diagnosticForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 显示加载动画
+                document.getElementById('diagnostic-spinner').classList.remove('d-none');
+                document.getElementById('diagnostic-submit').setAttribute('disabled', 'disabled');
+                
+                // 获取表单数据
+                const deviceId = document.getElementById('device-select').value;
+                const issueDescription = document.getElementById('issue-description').value;
+                
+                // 调用诊断接口（模拟）
+                setTimeout(function() {
+                    // 隐藏加载动画
+                    document.getElementById('diagnostic-spinner').classList.add('d-none');
+                    document.getElementById('diagnostic-submit').removeAttribute('disabled');
+                    
+                    // 显示结果
+                    document.getElementById('diagnostic-result').classList.remove('d-none');
+                    document.getElementById('diagnostic-content').innerHTML = generateDiagnostic(deviceId, issueDescription);
+                }, 2000);
+            });
+        }
+        
+        // 对话表单提交事件
+        if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+                
+                // 添加用户消息到聊天窗口
+                addMessage('user', userMessage);
+                
+                // 清空输入框
+                chatInput.value = '';
+                
+                // 显示加载动画
+                document.getElementById('chat-spinner').classList.remove('d-none');
+                document.getElementById('chat-submit').setAttribute('disabled', 'disabled');
+                
+                // 调用AI接口
+                fetch('/api/assistant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: userMessage
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 隐藏加载动画
+                    document.getElementById('chat-spinner').classList.add('d-none');
+                    document.getElementById('chat-submit').removeAttribute('disabled');
+                    
+                    // 添加AI回复
+                    addMessage('assistant', data.response);
+                    
+                    // 滚动到底部
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // 隐藏加载动画
+                    document.getElementById('chat-spinner').classList.add('d-none');
+                    document.getElementById('chat-submit').removeAttribute('disabled');
+                    
+                    // 显示错误消息
+                    addMessage('assistant', '抱歉，我遇到了一些问题，无法回答您的问题。请稍后再试。');
+                    
+                    // 滚动到底部
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
+            });
+        }
+    });
+    
+    // 添加消息到聊天窗口
+    function addMessage(sender, content) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        
+        const paragraph = document.createElement('p');
+        paragraph.textContent = content;
+        
+        messageContent.appendChild(paragraph);
+        messageDiv.appendChild(messageContent);
+        chatMessages.appendChild(messageDiv);
+    }
+    
+    // 生成诊断结果（模拟）
+    function generateDiagnostic(deviceId, issueDescription) {
+        // 这里是模拟的诊断结果，实际应用中应该调用后端API
+        const issues = [
+            "带宽利用率过高导致的网络拥塞",
+            "DNS解析延迟",
+            "路由表配置错误",
+            "设备CPU使用率过高",
+            "防火墙规则阻止了合法流量",
+            "MAC地址冲突",
+            "网络接口硬件故障"
+        ];
+        
+        const solutions = [
+            "建议实施流量整形和QoS策略，限制非关键应用的带宽使用",
+            "更新DNS服务器配置，或考虑使用本地DNS缓存",
+            "检查并更新路由表，确保路由条目正确",
+            "识别并优化占用CPU资源的进程，或考虑升级硬件",
+            "审核并更新防火墙规则，确保合法流量能够通过",
+            "识别并解决网络中的MAC地址冲突",
+            "检查网卡物理连接，必要时更换硬件"
+        ];
+        
+        const randomIndex = Math.floor(Math.random() * issues.length);
+        const issue = issues[randomIndex];
+        const solution = solutions[randomIndex];
+        
+        return `
+            <p><strong>问题分析：</strong></p>
+            <p>根据您的描述"${issueDescription}"和设备监控数据，系统诊断出可能的问题是：<strong>${issue}</strong>。</p>
+            <p><strong>建议解决方案：</strong></p>
+            <p>${solution}</p>
+            <p><strong>其他建议：</strong></p>
+            <ul>
+                <li>检查设备网络连接的物理状态</li>
+                <li>验证网络配置是否符合预期</li>
+                <li>监控设备性能指标，查看是否存在异常</li>
+            </ul>
+        `;
+    }
+    
+    // 生成AI回复（模拟）
+    function generateAIResponse(userMessage) {
+        // 这里是模拟的AI回复，实际应用中应该调用DeepSeek API
+        const responses = [
+            "根据历史数据分析，您的网络在工作日上午10点到11点之间流量最高。建议考虑在这个时间段避免进行大型的数据传输作业。",
+            "您的核心交换机在过去一周内出现了3次CPU使用率超过90%的情况，这可能导致网络延迟增加。建议检查是否有异常流量或配置不当导致的资源消耗。",
+            "检测到多个设备的STP拓扑频繁变化，这可能表明网络中存在物理连接不稳定的情况。建议检查网络布线和端口配置。",
+            "您的防火墙日志显示大量来自特定IP地址的连接尝试被拒绝，这可能是潜在的安全威胁。建议进一步调查这些连接尝试的来源和目的。",
+            "监控数据显示，您的主要服务器的响应时间在过去24小时内逐渐增加。建议检查服务器资源使用情况和网络连接状态。",
+            "根据分析，您的网络中有几个设备使用了相同的IP地址，这可能导致连接问题。建议检查DHCP配置并确保所有静态IP分配不重复。"
+        ];
+        
+        // 简单的关键词匹配，实际AI助手会更加智能
+        if (userMessage.toLowerCase().includes('带宽') || userMessage.toLowerCase().includes('流量')) {
+            return "根据当前监控数据，您的网络带宽使用率在过去24小时内平均为45%，峰值为78%（发生在今天上午10:30）。主要流量来源是文件共享和视频会议应用。如果您感觉网络速度变慢，建议实施QoS策略，优先保障关键业务应用的带宽需求。";
+        } else if (userMessage.toLowerCase().includes('延迟') || userMessage.toLowerCase().includes('响应时间')) {
+            return "您的网络平均延迟为15ms，这在大多数情况下是正常的。但监测到在过去一周内，有三次延迟峰值超过100ms，主要发生在广域网连接上。建议检查WAN链路质量，或考虑实施路径优化技术如SD-WAN来提高网络性能。";
+        } else if (userMessage.toLowerCase().includes('安全') || userMessage.toLowerCase().includes('入侵')) {
+            return "系统在过去30天内检测到23次可疑的安全事件，主要集中在尝试SSH暴力破解和异常端口扫描活动。所有这些尝试都被安全策略阻止。建议定期更新防火墙规则，并考虑实施入侵防御系统(IPS)来增强网络安全防护。";
+        } else {
+            // 随机返回一个通用回复
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+    }
+</script>
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 400px;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chat-input {
+        border-top: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+    
+    .message {
+        margin-bottom: 1rem;
+        max-width: 80%;
+    }
+    
+    .message.user {
+        align-self: flex-end;
+    }
+    
+    .message.assistant {
+        align-self: flex-start;
+    }
+    
+    .message-content {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+    }
+    
+    .message.user .message-content {
+        background-color: #007bff;
+        color: #fff;
+    }
+    
+    .message.assistant .message-content {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}

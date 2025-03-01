@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}告警中心 - 网络智能监控平台{% endblock %}
+
+{% block header %}告警中心{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">严重告警</h5>
+                <p class="card-text display-4" id="critical-alerts-count">
+                    {% set critical_count = alerts|selectattr('severity', 'equalto', 'critical')|list|length %}
+                    {{ critical_count }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">警告告警</h5>
+                <p class="card-text display-4" id="warning-alerts-count">
+                    {% set warning_count = alerts|selectattr('severity', 'equalto', 'warning')|list|length %}
+                    {{ warning_count }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">信息告警</h5>
+                <p class="card-text display-4" id="info-alerts-count">
+                    {% set info_count = alerts|selectattr('severity', 'equalto', 'info')|list|length %}
+                    {{ info_count }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">已解决告警</h5>
+                <p class="card-text display-4" id="resolved-alerts-count">
+                    {% set resolved_count = alerts|selectattr('resolved', 'equalto', true)|list|length %}
+                    {{ resolved_count }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>告警列表</span>
+        <div class="btn-group">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                过滤
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item filter-option" data-filter="all" href="#">所有告警</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="unresolved" href="#">未解决告警</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="critical" href="#">严重告警</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="warning" href="#">警告告警</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="info" href="#">信息告警</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="resolved" href="#">已解决告警</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>设备</th>
+                        <th>类型</th>
+                        <th>消息</th>
+                        <th>严重性</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="alerts-table">
+                    {% if alerts %}
+                        {% for alert in alerts %}
+                        <tr class="alert-row {{ 'resolved' if alert.resolved else '' }} {{ alert.severity }}">
+                            <td>{{ moment(alert.timestamp|timestamp_to_datetime).fromNow() }}</td>
+                            <td>
+                                <a href="{{ url_for('device_detail', device_id=alert.device_id) }}">
+                                    {{ alert.device.name }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if alert.alert_type == 'high_cpu' %}
+                                    CPU使用率高
+                                {% elif alert.alert_type == 'high_memory' %}
+                                    内存使用率高
+                                {% elif alert.alert_type == 'high_bandwidth' %}
+                                    带宽使用率高
+                                {% elif alert.alert_type == 'device_unreachable' %}
+                                    设备不可达
+                                {% elif alert.alert_type == 'high_packet_loss' %}
+                                    丢包率高
+                                {% elif alert.alert_type == 'high_latency' %}
+                                    延迟高
+                                {% else %}
+                                    {{ alert.alert_type }}
+                                {% endif %}
+                            </td>
+                            <td>{{ alert.message }}</td>
+                            <td>
+                                {% if alert.severity == 'info' %}
+                                <span class="badge bg-info">信息</span>
+                                {% elif alert.severity == 'warning' %}
+                                <span class="badge bg-warning">警告</span>
+                                {% elif alert.severity == 'error' %}
+                                <span class="badge bg-danger">错误</span>
+                                {% elif alert.severity == 'critical' %}
+                                <span class="badge bg-danger">严重</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ alert.severity }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if alert.resolved %}
+                                <span class="badge bg-success">已解决</span>
+                                {% else %}
+                                <span class="badge bg-danger">未解决</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not alert.resolved %}
+                                <button class="btn btn-sm btn-primary resolve-alert-btn" data-alert-id="{{ alert.id }}">
+                                    解决
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#resolutionModal" data-alert-id="{{ alert.id }}">
+                                    详情
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">暂无告警</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 告警解决模态框 -->
+<div class="modal fade" id="resolveAlertModal" tabindex="-1" aria-labelledby="resolveAlertModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resolveAlertModalLabel">解决告警</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="resolveAlertForm">
+                    <input type="hidden" id="alert-id" name="alert_id">
+                    <div class="mb-3">
+                        <label for="resolution-notes" class="form-label">解决备注</label>
+                        <textarea class="form-control" id="resolution-notes" name="resolution_notes" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submit-resolve">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 告警详情模态框 -->
+<div class="modal fade" id="resolutionModal" tabindex="-1" aria-labelledby="resolutionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resolutionModalLabel">告警解决详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>解决时间：</strong>
+                    <span id="resolution-time"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>解决人员：</strong>
+                    <span id="resolution-user"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>解决备注：</strong>
+                    <p id="resolution-notes-display"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 当前过滤器
+    let currentFilter = 'all';
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 解决告警按钮点击事件
+        document.querySelectorAll('.resolve-alert-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const alertId = this.getAttribute('data-alert-id');
+                showResolveModal(alertId);
+            });
+        });
+        
+        // 过滤选项点击事件
+        document.querySelectorAll('.filter-option').forEach(function(option) {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentFilter = this.getAttribute('data-filter');
+                filterAlerts(currentFilter);
+            });
+        });
+        
+        // 提交解决按钮点击事件
+        document.getElementById('submit-resolve').addEventListener('click', function() {
+            resolveAlert();
+        });
+        
+        // 告警详情模态框显示事件
+        $('#resolutionModal').on('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const alertId = button.getAttribute('data-alert-id');
+            loadResolutionDetails(alertId);
+        });
+        
+        // 初始化过滤器（默认显示所有）
+        filterAlerts('all');
+    });
+    
+    // 显示解决告警模态框
+    function showResolveModal(alertId) {
+        document.getElementById('alert-id').value = alertId;
+        document.getElementById('resolution-notes').value = '';
+        
+        const modal = new bootstrap.Modal(document.getElementById('resolveAlertModal'));
+        modal.show();
+    }
+    
+    // 解决告警
+    function resolveAlert() {
+        const alertId = document.getElementById('alert-id').value;
+        const notes = document.getElementById('resolution-notes').value;
+        
+        if (!notes) {
+            alert('请输入解决备注');
+            return;
+        }
+        
+        // 在实际应用中，这里应该调用API来解决告警
+        // 这里简单模拟一下效果
+        
+        const button = document.querySelector(`.resolve-alert-btn[data-alert-id="${alertId}"]`);
+        if (button) {
+            const row = button.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const actionCell = row.querySelector('td:nth-child(7)');
+            
+            // 更新状态
+            statusCell.innerHTML = '<span class="badge bg-success">已解决</span>';
+            
+            // 更新操作按钮
+            actionCell.innerHTML = `
+                <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#resolutionModal" data-alert-id="${alertId}">
+                    详情
+                </button>
+            `;
+            
+            // 添加已解决类
+            row.classList.add('resolved');
+            
+            // 更新计数
+            updateAlertCounts();
+            
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('resolveAlertModal'));
+            modal.hide();
+            
+            // 显示成功消息
+            alert('告警已成功解决');
+        }
+    }
+    
+    // 加载告警解决详情
+    function loadResolutionDetails(alertId) {
+        // 在实际应用中，这里应该调用API来获取告警解决详情
+        // 这里简单模拟一下效果
+        
+        // 模拟数据
+        const resolutionTime = new Date().toLocaleString();
+        const resolutionUser = '当前用户';
+        const resolutionNotes = '问题已解决，重启设备后恢复正常。';
+        
+        // 设置模态框内容
+        document.getElementById('resolution-time').textContent = resolutionTime;
+        document.getElementById('resolution-user').textContent = resolutionUser;
+        document.getElementById('resolution-notes-display').textContent = resolutionNotes;
+    }
+    
+    // 过滤告警
+    function filterAlerts(filter) {
+        const rows = document.querySelectorAll('.alert-row');
+        
+        rows.forEach(function(row) {
+            switch(filter) {
+                case 'all':
+                    row.style.display = '';
+                    break;
+                case 'unresolved':
+                    row.style.display = row.classList.contains('resolved') ? 'none' : '';
+                    break;
+                case 'resolved':
+                    row.style.display = row.classList.contains('resolved') ? '' : 'none';
+                    break;
+                case 'critical':
+                    row.style.display = row.classList.contains('critical') ? '' : 'none';
+                    break;
+                case 'warning':
+                    row.style.display = row.classList.contains('warning') ? '' : 'none';
+                    break;
+                case 'info':
+                    row.style.display = row.classList.contains('info') ? '' : 'none';
+                    break;
+                default:
+                    row.style.display = '';
+            }
+        });
+    }
+    
+    // 更新告警计数
+    function updateAlertCounts() {
+        // 计算各类告警数量
+        const rows = document.querySelectorAll('.alert-row');
+        let criticalCount = 0;
+        let warningCount = 0;
+        let infoCount = 0;
+        let resolvedCount = 0;
+        
+        rows.forEach(function(row) {
+            if (row.classList.contains('resolved')) {
+                resolvedCount++;
+            } else {
+                if (row.classList.contains('critical')) {
+                    criticalCount++;
+                } else if (row.classList.contains('warning')) {
+                    warningCount++;
+                } else if (row.classList.contains('info')) {
+                    infoCount++;
+                }
+            }
+        });
+        
+        // 更新显示
+        document.getElementById('critical-alerts-count').textContent = criticalCount;
+        document.getElementById('warning-alerts-count').textContent = warningCount;
+        document.getElementById('info-alerts-count').textContent = infoCount;
+        document.getElementById('resolved-alerts-count').textContent = resolvedCount;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}添加设备 - 网络智能监控平台{% endblock %}
+
+{% block header %}添加设备{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                设备信息
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_device') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">设备名称</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                        <div class="form-text">为设备指定一个易于识别的名称</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label">IP地址</label>
+                        <input type="text" class="form-control" id="ip_address" name="ip_address" 
+                               pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" 
+                               placeholder="例如：192.168.1.1" required>
+                        <div class="form-text">设备的IP地址，格式为四段点分十进制</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="device_type" class="form-label">设备类型</label>
+                        <select class="form-select" id="device_type" name="device_type" required>
+                            <option value="">请选择...</option>
+                            <option value="router">路由器</option>
+                            <option value="switch">交换机</option>
+                            <option value="firewall">防火墙</option>
+                            <option value="server">服务器</option>
+                            <option value="workstation">工作站</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="snmp_community" class="form-label">SNMP社区字符串</label>
+                        <input type="text" class="form-control" id="snmp_community" name="snmp_community" placeholder="例如：public">
+                        <div class="form-text">如果设备支持SNMP，请输入SNMP社区字符串（通常为"public"或"private"）</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="location" class="form-label">位置</label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="例如：数据中心A区">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('devices') }}" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">添加设备</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 在页面加载完成后，添加IP地址验证
+    document.addEventListener('DOMContentLoaded', function() {
+        const ipAddressInput = document.getElementById('ip_address');
+        
+        ipAddressInput.addEventListener('input', function() {
+            const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            
+            if (this.value && !ipPattern.test(this.value)) {
+                this.setCustomValidity('请输入有效的IP地址，格式为四段点分十进制（例如：192.168.1.1）');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    });
+</script>
+{% endblock %}
