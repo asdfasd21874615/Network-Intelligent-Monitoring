@@ -3,4 +3,6 @@
 ![image](https://github.com/user-attachments/assets/f74086bc-ef6a-438e-962b-1de6e53c373c)
 注册页面
 ![image](https://github.com/user-attachments/assets/cb3ad550-22d9-4db0-8e5d-be2d2aedaa71)
+仪表盘
+![image](https://github.com/user-attachments/assets/cc0375f1-113c-4604-95a5-227d743dddd6)
 
