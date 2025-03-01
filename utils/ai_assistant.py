@@ -14,12 +14,12 @@ class DeepSeekAssistant:
         初始化DeepSeek助手
         
         Args:
-            api_key: DeepSeek API密钥
+            api_key: sk-5f412e5a29a541f3b04c1f8cb93779e7
             api_url: DeepSeek API URL
         """
         logger.info("初始化DeepSeek AI助手")
-        self.api_key = api_key
-        self.api_url = api_url or "https://api.deepseek.com/v1/chat/completions"
+        self.api_key = "sk-5f412e5a29a541f3b04c1f8cb93779e7"
+        self.api_url = "https://api.deepseek.com/v1/chat/completions"
         
         # 系统提示，指导AI助手的行为
         self.system_prompt = """

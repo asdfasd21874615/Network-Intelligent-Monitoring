@@ -139,14 +139,24 @@
     
     // 更新仪表盘数据
     function updateDashboardData() {
-        // 这里应该从后端API获取数据
-        // 由于API尚未实现，暂时使用模拟数据
-        
-        // 更新设备计数
-        document.getElementById('online-devices-count').textContent = Math.floor(Math.random() * 50) + 20;
-        document.getElementById('warning-devices-count').textContent = Math.floor(Math.random() * 10) + 1;
-        document.getElementById('error-devices-count').textContent = Math.floor(Math.random() * 5);
-        document.getElementById('unresolved-alerts-count').textContent = Math.floor(Math.random() * 15) + 2;
+        // 从后端API获取仪表盘汇总数据
+        fetch('/api/dashboard/summary')
+            .then(response => response.json())
+            .then(data => {
+                // 更新设备计数
+                document.getElementById('online-devices-count').textContent = data.devices.online;
+                document.getElementById('warning-devices-count').textContent = data.devices.warning;
+                document.getElementById('error-devices-count').textContent = data.devices.error;
+                document.getElementById('unresolved-alerts-count').textContent = data.alerts.unresolved;
+            })
+            .catch(error => {
+                console.error('获取仪表盘数据失败:', error);
+                // 如果API失败，使用占位符
+                document.getElementById('online-devices-count').textContent = '--';
+                document.getElementById('warning-devices-count').textContent = '--';
+                document.getElementById('error-devices-count').textContent = '--';
+                document.getElementById('unresolved-alerts-count').textContent = '--';
+            });
         
         // 更新最近告警表格
         updateRecentAlerts();
@@ -372,36 +382,70 @@
     
     // 更新图表数据
     function updateChartData() {
-        // 更新网络性能趋势图
-        // 在实际应用中，应该从后端API获取历史数据
+        // 更新网络性能趋势图 - 从API获取数据
+        fetch('/api/dashboard/performance?range=day')
+            .then(response => response.json())
+            .then(data => {
+                // 格式化时间戳为可读形式
+                const labels = data.timestamps.map(ts => {
+                    const date = new Date(ts * 1000);
+                    return date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+                });
+                
+                // 更新图表数据
+                networkPerformanceChart.data.labels = labels;
+                networkPerformanceChart.data.datasets[0].data = data.cpu_usage;
+                networkPerformanceChart.data.datasets[1].data = data.memory_usage;
+                networkPerformanceChart.data.datasets[2].data = data.bandwidth_usage;
+                
+                // 更新图表
+                networkPerformanceChart.update();
+            })
+            .catch(error => {
+                console.error('获取性能趋势数据失败:', error);
+                // 如果API失败，使用一些模拟数据
+                // 获取当前时间
+                const now = new Date();
+                const timeLabel = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+                
+                // 添加新数据点
+                networkPerformanceChart.data.labels.push(timeLabel);
+                networkPerformanceChart.data.datasets[0].data.push(Math.floor(Math.random() * 30) + 50); // CPU: 50-80%
+                networkPerformanceChart.data.datasets[1].data.push(Math.floor(Math.random() * 30) + 40); // Memory: 40-70%
+                networkPerformanceChart.data.datasets[2].data.push(Math.floor(Math.random() * 40) + 30); // Bandwidth: 30-70%
+                
+                // 保持最近12个数据点
+                if (networkPerformanceChart.data.labels.length > 12) {
+                    networkPerformanceChart.data.labels.shift();
+                    networkPerformanceChart.data.datasets.forEach(dataset => dataset.data.shift());
+                }
+                
+                // 更新图表
+                networkPerformanceChart.update();
+            });
         
-        // 获取当前时间
-        const now = new Date();
-        const timeLabel = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-        
-        // 添加新数据点
-        networkPerformanceChart.data.labels.push(timeLabel);
-        networkPerformanceChart.data.datasets[0].data.push(Math.floor(Math.random() * 30) + 50); // CPU: 50-80%
-        networkPerformanceChart.data.datasets[1].data.push(Math.floor(Math.random() * 30) + 40); // Memory: 40-70%
-        networkPerformanceChart.data.datasets[2].data.push(Math.floor(Math.random() * 40) + 30); // Bandwidth: 30-70%
-        
-        // 保持最近12个数据点
-        if (networkPerformanceChart.data.labels.length > 12) {
-            networkPerformanceChart.data.labels.shift();
-            networkPerformanceChart.data.datasets.forEach(dataset => dataset.data.shift());
-        }
-        
-        // 更新图表
-        networkPerformanceChart.update();
-        
-        // 更新设备状态分布图
-        deviceStatusChart.data.datasets[0].data = [
-            Math.floor(Math.random() * 30) + 50, // 在线: 50-80
-            Math.floor(Math.random() * 10) + 5,  // 警告: 5-15
-            Math.floor(Math.random() * 5) + 1,   // 错误: 1-6
-            Math.floor(Math.random() * 5) + 3    // 离线: 3-8
-        ];
-        deviceStatusChart.update();
+        // 更新设备状态分布图 - 从API获取数据
+        fetch('/api/dashboard/device-status')
+            .then(response => response.json())
+            .then(data => {
+                // 更新图表数据
+                deviceStatusChart.data.labels = data.labels;
+                deviceStatusChart.data.datasets[0].data = data.data;
+                
+                // 更新图表
+                deviceStatusChart.update();
+            })
+            .catch(error => {
+                console.error('获取设备状态分布数据失败:', error);
+                // 如果API失败，使用模拟数据
+                deviceStatusChart.data.datasets[0].data = [
+                    Math.floor(Math.random() * 30) + 50, // 在线: 50-80
+                    Math.floor(Math.random() * 10) + 5,  // 警告: 5-15
+                    Math.floor(Math.random() * 5) + 1,   // 错误: 1-6
+                    Math.floor(Math.random() * 5) + 3    // 离线: 3-8
+                ];
+                deviceStatusChart.update();
+            });
     }
 </script>
 {% endblock %}

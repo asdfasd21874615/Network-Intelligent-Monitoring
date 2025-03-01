@@ -162,6 +162,113 @@ def ask_assistant():
     response = ai_assistant.ask(query, context)
     return jsonify({'response': response})
 
+# API: 获取仪表盘数据
+@app.route('/api/dashboard/summary')
+@login_required
+def get_dashboard_summary():
+    # 获取设备状态统计
+    total_devices = Device.query.count()
+    online_devices = Device.query.filter_by(status='online').count()
+    warning_devices = Device.query.filter_by(status='warning').count()
+    error_devices = Device.query.filter_by(status='error').count()
+    offline_devices = Device.query.filter_by(status='offline').count()
+    
+    # 未解决的警报
+    unresolved_alerts = Alert.query.filter_by(resolved=False).count()
+    
+    # 返回汇总数据
+    result = {
+        'devices': {
+            'total': total_devices,
+            'online': online_devices,
+            'warning': warning_devices,
+            'error': error_devices,
+            'offline': offline_devices
+        },
+        'alerts': {
+            'unresolved': unresolved_alerts
+        }
+    }
+    
+    return jsonify(result)
+
+# API: 获取网络性能趋势数据
+@app.route('/api/dashboard/performance')
+@login_required
+def get_performance_trends():
+    time_range = request.args.get('range', 'day')  # hour, day, week
+    
+    if time_range == 'hour':
+        # 获取最近一小时的数据
+        from_time = datetime.now().timestamp() - 3600
+    elif time_range == 'day':
+        # 获取最近一天的数据
+        from_time = datetime.now().timestamp() - 86400
+    else:
+        # 获取最近一周的数据
+        from_time = datetime.now().timestamp() - 604800
+    
+    # 获取所有设备在指定时间范围内的平均性能数据
+    # 这里按一小时为间隔进行分组
+    
+    # 这里使用SQL获取聚合数据，实际实现可能需要根据数据库类型调整
+    # 这是一个简化的实现，实际中可能需要更复杂的查询
+    data = NetworkData.query.filter(NetworkData.timestamp > from_time).all()
+    
+    # 按照时间戳进行分组，每小时一个数据点
+    hour_data = {}
+    for record in data:
+        # 将时间戳向下取整到小时
+        hour_ts = int(record.timestamp / 3600) * 3600
+        if hour_ts not in hour_data:
+            hour_data[hour_ts] = {'count': 0, 'cpu': 0, 'memory': 0, 'bandwidth': 0, 'packet_loss': 0}
+        
+        hour_data[hour_ts]['count'] += 1
+        hour_data[hour_ts]['cpu'] += record.cpu_usage
+        hour_data[hour_ts]['memory'] += record.memory_usage
+        hour_data[hour_ts]['bandwidth'] += record.bandwidth_usage
+        hour_data[hour_ts]['packet_loss'] += record.packet_loss
+    
+    # 计算每小时的平均值
+    result = {
+        'timestamps': [],
+        'cpu_usage': [],
+        'memory_usage': [],
+        'bandwidth_usage': [],
+        'packet_loss': []
+    }
+    
+    # 对数据进行排序
+    for ts in sorted(hour_data.keys()):
+        data_point = hour_data[ts]
+        count = data_point['count']
+        
+        # 添加时间戳和平均值
+        result['timestamps'].append(ts)
+        result['cpu_usage'].append(round(data_point['cpu'] / count, 2) if count > 0 else 0)
+        result['memory_usage'].append(round(data_point['memory'] / count, 2) if count > 0 else 0)
+        result['bandwidth_usage'].append(round(data_point['bandwidth'] / count, 2) if count > 0 else 0)
+        result['packet_loss'].append(round(data_point['packet_loss'] / count, 2) if count > 0 else 0)
+    
+    return jsonify(result)
+
+# API: 获取设备状态分布数据
+@app.route('/api/dashboard/device-status')
+@login_required
+def get_device_status_distribution():
+    # 获取各状态设备数量
+    online_count = Device.query.filter_by(status='online').count()
+    warning_count = Device.query.filter_by(status='warning').count()
+    error_count = Device.query.filter_by(status='error').count()
+    offline_count = Device.query.filter_by(status='offline').count()
+    
+    result = {
+        'labels': ['在线', '警告', '错误', '离线'],
+        'data': [online_count, warning_count, error_count, offline_count]
+    }
+    
+    return jsonify(result)
+
 # API: 获取设备监控数据
 @app.route('/api/device/<int:device_id>/data')
 @login_required
