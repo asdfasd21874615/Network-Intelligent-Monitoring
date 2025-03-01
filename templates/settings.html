@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置 - 网络智能监控平台{% endblock %}
+
+{% block header %}系统设置{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action active" id="profile-tab" data-bs-toggle="list" href="#profile" role="tab" aria-controls="profile">个人信息</a>
+            <a class="list-group-item list-group-item-action" id="system-tab" data-bs-toggle="list" href="#system" role="tab" aria-controls="system">系统设置</a>
+            <a class="list-group-item list-group-item-action" id="notification-tab" data-bs-toggle="list" href="#notification" role="tab" aria-controls="notification">通知设置</a>
+            <a class="list-group-item list-group-item-action" id="appearance-tab" data-bs-toggle="list" href="#appearance" role="tab" aria-controls="appearance">界面设置</a>
+            <a class="list-group-item list-group-item-action" id="backup-tab" data-bs-toggle="list" href="#backup" role="tab" aria-controls="backup">数据备份</a>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="tab-content">
+            <!-- 个人信息设置 -->
+            <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">个人信息设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('settings') }}">
+                            <input type="hidden" name="update_profile" value="1">
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用户名</label>
+                                <input type="text" class="form-control" id="username" value="{{ user.username }}" readonly>
+                                <small class="text-muted">用户名不可更改</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">真实姓名</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ user.name or '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">电子邮箱</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email or '' }}">
+                            </div>
+                            
+                            <hr>
+                            <h5>修改密码</h5>
+                            
+                            <div class="mb-3">
+                                <label for="current_password" class="form-label">当前密码</label>
+                                <input type="password" class="form-control" id="current_password" name="current_password">
+                                <small class="text-muted">仅在需要修改密码时填写</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">新密码</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">确认新密码</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">保存个人信息</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统设置 -->
+            <div class="tab-pane fade" id="system" role="tabpanel" aria-labelledby="system-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">系统设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('settings') }}">
+                            <input type="hidden" name="update_system" value="1">
+                            
+                            <div class="mb-3">
+                                <label for="refresh_interval" class="form-label">数据刷新间隔（秒）</label>
+                                <input type="number" class="form-control" id="refresh_interval" name="refresh_interval" min="5" max="300" value="{{ settings.refresh_interval|default(30) }}">
+                                <small class="text-muted">设备数据刷新的时间间隔，推荐30秒</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="snmp_timeout" class="form-label">SNMP超时时间（秒）</label>
+                                <input type="number" class="form-control" id="snmp_timeout" name="snmp_timeout" min="1" max="60" value="{{ settings.snmp_timeout|default(5) }}">
+                                <small class="text-muted">SNMP请求超时时间，推荐5秒</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ssh_timeout" class="form-label">SSH连接超时（秒）</label>
+                                <input type="number" class="form-control" id="ssh_timeout" name="ssh_timeout" min="1" max="60" value="{{ settings.ssh_timeout|default(10) }}">
+                                <small class="text-muted">SSH连接超时时间，推荐10秒</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="retention_days" class="form-label">数据保留天数</label>
+                                <input type="number" class="form-control" id="retention_days" name="retention_days" min="1" max="365" value="{{ settings.retention_days|default(30) }}">
+                                <small class="text-muted">历史数据保留天数，超过此天数的数据将被自动清理</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="dashboard_auto_refresh" name="dashboard_auto_refresh" {% if settings.dashboard_auto_refresh|default(true) %}checked{% endif %}>
+                                <label class="form-check-label" for="dashboard_auto_refresh">仪表盘自动刷新</label>
+                                <div class="form-text">启用后仪表盘将自动刷新数据</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">保存系统设置</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 通知设置 -->
+            <div class="tab-pane fade" id="notification" role="tabpanel" aria-labelledby="notification-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">通知设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('settings') }}">
+                            <input type="hidden" name="update_notifications" value="1">
+                            
+                            <div class="mb-3">
+                                <label for="alert_email" class="form-label">告警邮件接收地址</label>
+                                <input type="email" class="form-control" id="alert_email" name="alert_email" value="{{ settings.alert_email|default('') }}">
+                                <small class="text-muted">接收告警通知的邮箱地址</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="notify_critical" name="notify_critical" checked disabled>
+                                <label class="form-check-label" for="notify_critical">严重级别通知</label>
+                                <div class="form-text">严重级别的告警通知（始终启用）</div>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="notify_warning" name="notify_warning" {% if settings.notify_warning|default(true) %}checked{% endif %}>
+                                <label class="form-check-label" for="notify_warning">警告级别通知</label>
+                                <div class="form-text">警告级别的告警通知</div>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="notify_info" name="notify_info" {% if settings.notify_info|default(false) %}checked{% endif %}>
+                                <label class="form-check-label" for="notify_info">信息级别通知</label>
+                                <div class="form-text">信息级别的告警通知</div>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="browser_notifications" name="browser_notifications" {% if settings.browser_notifications|default(true) %}checked{% endif %}>
+                                <label class="form-check-label" for="browser_notifications">浏览器通知</label>
+                                <div class="form-text">启用浏览器桌面通知（需要浏览器支持）</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">保存通知设置</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 界面设置 -->
+            <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">界面设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('settings') }}">
+                            <input type="hidden" name="update_appearance" value="1">
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="dark_mode" name="dark_mode" {% if settings.dark_mode|default(false) %}checked{% endif %}>
+                                <label class="form-check-label" for="dark_mode">深色模式</label>
+                                <div class="form-text">启用深色主题</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="theme_color" class="form-label">主题颜色</label>
+                                <select class="form-select" id="theme_color" name="theme_color">
+                                    <option value="blue" {% if settings.theme_color|default('blue') == 'blue' %}selected{% endif %}>蓝色</option>
+                                    <option value="green" {% if settings.theme_color|default('blue') == 'green' %}selected{% endif %}>绿色</option>
+                                    <option value="purple" {% if settings.theme_color|default('blue') == 'purple' %}selected{% endif %}>紫色</option>
+                                    <option value="red" {% if settings.theme_color|default('blue') == 'red' %}selected{% endif %}>红色</option>
+                                    <option value="orange" {% if settings.theme_color|default('blue') == 'orange' %}selected{% endif %}>橙色</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="dashboard_layout" class="form-label">仪表盘布局</label>
+                                <select class="form-select" id="dashboard_layout" name="dashboard_layout">
+                                    <option value="standard" {% if settings.dashboard_layout|default('standard') == 'standard' %}selected{% endif %}>标准布局</option>
+                                    <option value="compact" {% if settings.dashboard_layout|default('standard') == 'compact' %}selected{% endif %}>紧凑布局</option>
+                                    <option value="detailed" {% if settings.dashboard_layout|default('standard') == 'detailed' %}selected{% endif %}>详细布局</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">保存界面设置</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据备份 -->
+            <div class="tab-pane fade" id="backup" role="tabpanel" aria-labelledby="backup-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">数据备份</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            数据备份功能可以帮助你备份系统配置和历史数据，以防数据丢失。
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>创建备份</h6>
+                            <p>点击下方按钮创建一个包含所有系统数据的备份文件。</p>
+                            <button type="button" class="btn btn-primary" id="create-backup-btn">
+                                <i class="fas fa-download me-1"></i> 创建新备份
+                            </button>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>现有备份</h6>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>备份名称</th>
+                                            <th>创建时间</th>
+                                            <th>大小</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if backups %}
+                                            {% for backup in backups %}
+                                            <tr>
+                                                <td>{{ backup.name }}</td>
+                                                <td>{{ backup.created_at|timestamp_to_datetime }}</td>
+                                                <td>{{ backup.size }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary download-backup-btn" data-backup-id="{{ backup.id }}">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger delete-backup-btn" data-backup-id="{{ backup.id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">暂无备份</td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h6>恢复备份</h6>
+                            <p>您可以从本地文件恢复之前的备份。</p>
+                            <form method="post" action="{{ url_for('settings') }}" enctype="multipart/form-data">
+                                <input type="hidden" name="restore_backup" value="1">
+                                <div class="mb-3">
+                                    <input class="form-control" type="file" id="backup_file" name="backup_file" accept=".zip">
+                                </div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-upload me-1"></i> 恢复备份
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 创建备份按钮点击事件
+        const createBackupBtn = document.getElementById('create-backup-btn');
+        if (createBackupBtn) {
+            createBackupBtn.addEventListener('click', function() {
+                if (confirm('确定要创建新的备份吗？')) {
+                    this.disabled = true;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> 正在创建备份...';
+                    
+                    // 这里应该发送AJAX请求到后端创建备份
+                    // 因为当前没有实现此API，所以只是模拟
+                    setTimeout(() => {
+                        alert('备份功能尚未实现，这只是界面演示');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-download me-1"></i> 创建新备份';
+                    }, 1500);
+                }
+            });
+        }
+        
+        // 下载和删除备份按钮点击事件（如果有备份的话）
+        document.querySelectorAll('.download-backup-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const backupId = this.getAttribute('data-backup-id');
+                alert(`下载备份功能尚未实现，这只是界面演示（备份ID: ${backupId}）`);
+            });
+        });
+        
+        document.querySelectorAll('.delete-backup-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const backupId = this.getAttribute('data-backup-id');
+                if (confirm('确定要删除这个备份吗？此操作不可恢复！')) {
+                    alert(`删除备份功能尚未实现，这只是界面演示（备份ID: ${backupId}）`);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

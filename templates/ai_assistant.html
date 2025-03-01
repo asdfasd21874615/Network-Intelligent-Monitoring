@@ -5,38 +5,6 @@
 {% block header %}AI网络助手{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">智能网络分析与建议</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">
-                    AI助手通过分析网络设备的历史和实时数据，提供智能化的网络分析和优化建议。
-                </p>
-                
-                <div id="ai-insights-container">
-                    {% if insights %}
-                        {% for insight in insights %}
-                            <div class="alert alert-primary mb-3">
-                                <h5>{{ insight.title }}</h5>
-                                <p>{{ insight.description }}</p>
-                                <small class="text-muted">生成时间: {{ insight.timestamp|timestamp_to_datetime }}</small>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="alert alert-info">
-                            <h5>暂无洞察</h5>
-                            <p>AI助手尚未生成任何网络洞察。请确保您的网络设备正在被监控，并且有足够的历史数据用于分析。</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="row">
     <div class="col-lg-6">
         <div class="card">
@@ -106,64 +74,6 @@
         </div>
     </div>
 </div>
-
-<div class="row mt-4">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">网络优化建议</h5>
-            </div>
-            <div class="card-body">
-                <div class="accordion" id="optimization-accordion">
-                    {% if optimizations %}
-                        {% for optimization in optimizations %}
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="optimization-heading-{{ loop.index }}">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#optimization-collapse-{{ loop.index }}" aria-expanded="false" aria-controls="optimization-collapse-{{ loop.index }}">
-                                        {{ optimization.title }}
-                                        {% if optimization.priority == 'high' %}
-                                            <span class="badge bg-danger ms-2">高优先级</span>
-                                        {% elif optimization.priority == 'medium' %}
-                                            <span class="badge bg-warning ms-2">中优先级</span>
-                                        {% else %}
-                                            <span class="badge bg-info ms-2">低优先级</span>
-                                        {% endif %}
-                                    </button>
-                                </h2>
-                                <div id="optimization-collapse-{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="optimization-heading-{{ loop.index }}" data-bs-parent="#optimization-accordion">
-                                    <div class="accordion-body">
-                                        <p>{{ optimization.description }}</p>
-                                        {% if optimization.steps %}
-                                            <h6>建议步骤：</h6>
-                                            <ol>
-                                                {% for step in optimization.steps %}
-                                                    <li>{{ step }}</li>
-                                                {% endfor %}
-                                            </ol>
-                                        {% endif %}
-                                        {% if optimization.benefits %}
-                                            <h6>预期效益：</h6>
-                                            <ul>
-                                                {% for benefit in optimization.benefits %}
-                                                    <li>{{ benefit }}</li>
-                                                {% endfor %}
-                                            </ul>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="alert alert-info">
-                            <h5>暂无优化建议</h5>
-                            <p>AI助手尚未生成任何网络优化建议。随着更多设备数据的收集，系统将开始提供针对性的优化建议。</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
@@ -188,44 +98,20 @@
                 const issueDescription = document.getElementById('issue-description').value;
                 
                 // 调用诊断API
-                generateDiagnostic(deviceId, issueDescription)
-                .then(result => {
-                    // 隐藏加载动画
-                    document.getElementById('diagnostic-spinner').classList.add('d-none');
-                    document.getElementById('diagnostic-submit').removeAttribute('disabled');
-                    
-                    // 显示结果
-                    document.getElementById('diagnostic-result').classList.remove('d-none');
-                    document.getElementById('diagnostic-content').innerHTML = result;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    // 隐藏加载动画
-                    document.getElementById('diagnostic-spinner').classList.add('d-none');
-                    document.getElementById('diagnostic-submit').removeAttribute('disabled');
-                    
-                    // 显示错误消息
-                    document.getElementById('diagnostic-result').classList.remove('d-none');
-                    document.getElementById('diagnostic-content').innerHTML = `
-                        <div class="alert alert-danger">
-                            <p><strong>诊断请求失败：</strong> 无法连接诊断服务</p>
-                            <p>请检查网络连接并稍后重试</p>
-                        </div>
-                    `;
-                });
+                generateDiagnostic(deviceId, issueDescription);
             });
         }
         
-        // 对话表单提交事件
+        // 聊天提交事件
         if (chatForm) {
             chatForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                const userMessage = chatInput.value.trim();
-                if (!userMessage) return;
+                const userInput = chatInput.value.trim();
+                if (!userInput) return;
                 
-                // 添加用户消息到聊天窗口
-                addMessage('user', userMessage);
+                // 添加用户消息
+                addMessage('user', userInput);
                 
                 // 清空输入框
                 chatInput.value = '';
@@ -234,139 +120,139 @@
                 document.getElementById('chat-spinner').classList.remove('d-none');
                 document.getElementById('chat-submit').setAttribute('disabled', 'disabled');
                 
-                // 调用AI接口
+                // 发送到后端，获取AI助手回复
                 fetch('/api/assistant', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        query: userMessage
-                    })
+                    body: JSON.stringify({ query: userInput }),
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // 隐藏加载动画
-                    document.getElementById('chat-spinner').classList.add('d-none');
-                    document.getElementById('chat-submit').removeAttribute('disabled');
-                    
-                    // 添加AI回复
-                    addMessage('assistant', data.response);
-                    
-                    // 滚动到底部
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    if (data.success) {
+                        // 添加助手回复
+                        addMessage('assistant', data.response);
+                    } else {
+                        // 显示错误消息
+                        addMessage('assistant', '抱歉，我无法处理您的请求。' + (data.error || ''));
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    addMessage('assistant', '抱歉，发生了错误。请稍后再试。');
+                })
+                .finally(() => {
                     // 隐藏加载动画
                     document.getElementById('chat-spinner').classList.add('d-none');
                     document.getElementById('chat-submit').removeAttribute('disabled');
-                    
-                    // 显示错误消息
-                    addMessage('assistant', '抱歉，我遇到了一些问题，无法回答您的问题。请稍后再试。');
-                    
-                    // 滚动到底部
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 });
             });
         }
-    });
-    
-    // 添加消息到聊天窗口
-    function addMessage(sender, content) {
-        const chatMessages = document.getElementById('chat-messages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}`;
         
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
+        // 添加消息到聊天窗口
+        function addMessage(sender, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const paragraph = document.createElement('p');
+            paragraph.textContent = content;
+            
+            contentDiv.appendChild(paragraph);
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+            
+            // 滚动到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
         
-        const paragraph = document.createElement('p');
-        paragraph.textContent = content;
-        
-        messageContent.appendChild(paragraph);
-        messageDiv.appendChild(messageContent);
-        chatMessages.appendChild(messageDiv);
-    }
-    
-    // 生成诊断结果
-    function generateDiagnostic(deviceId, issueDescription) {
-        // 调用后端API进行网络诊断
-        return fetch('/api/device/diagnose', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                device_id: deviceId,
-                issue_description: issueDescription
+        // 生成诊断结果
+        function generateDiagnostic(deviceId, issueDescription) {
+            fetch('/api/device/diagnose', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    device_id: deviceId,
+                    issue_description: issueDescription
+                }),
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                return `
-                    <div class="alert alert-danger">
-                        <p><strong>诊断失败：</strong> ${data.message || '未知错误'}</p>
-                    </div>
-                `;
-            }
-            
-            // 构建诊断结果HTML
-            let recommendations = '';
-            if (data.recommendations && data.recommendations.length > 0) {
-                recommendations = '<ul>';
-                data.recommendations.forEach(rec => {
-                    recommendations += `<li>${rec}</li>`;
-                });
-                recommendations += '</ul>';
-            }
-            
-            return `
-                <div class="alert alert-info mb-3">
-                    <p><strong>设备：</strong> ${data.device_name} (${data.device_type})</p>
-                    <p><strong>状态：</strong> <span class="badge ${getBadgeClass(data.device_status)}">${getStatusText(data.device_status)}</span></p>
-                </div>
+            .then(response => response.json())
+            .then(data => {
+                // 显示诊断结果区域
+                document.getElementById('diagnostic-result').classList.remove('d-none');
                 
-                <p><strong>问题分析：</strong></p>
-                <p>${data.diagnosis || '无法分析问题'}</p>
+                const diagnosticContent = document.getElementById('diagnostic-content');
                 
-                <p><strong>建议解决方案：</strong></p>
-                ${recommendations || '<p>无可用的解决方案建议</p>'}
-            `;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            return `
-                <div class="alert alert-danger">
-                    <p><strong>诊断请求失败：</strong> 无法连接诊断服务</p>
-                    <p>请检查网络连接并稍后重试</p>
-                </div>
-            `;
-        });
-    }
-    
-    // 获取设备状态对应的徽章样式
-    function getBadgeClass(status) {
-        switch(status) {
-            case 'online': return 'bg-success';
-            case 'offline': return 'bg-secondary';
-            case 'warning': return 'bg-warning text-dark';
-            case 'error': return 'bg-danger';
-            default: return 'bg-info';
+                if (data.success) {
+                    let resultHtml = '';
+                    
+                    // 设备信息
+                    if (data.device_info) {
+                        resultHtml += `<h6>设备信息</h6>
+                                      <p><strong>名称:</strong> ${data.device_info.name || '未知'}</p>
+                                      <p><strong>IP地址:</strong> ${data.device_info.ip_address || '未知'}</p>
+                                      <p><strong>状态:</strong> <span class="badge ${getBadgeClass(data.device_info.status)}">${getStatusText(data.device_info.status)}</span></p>`;
+                    }
+                    
+                    // 诊断结果
+                    resultHtml += `<h6>问题诊断</h6>
+                                  <p>${data.diagnosis || '无法生成诊断结果'}</p>`;
+                    
+                    // 建议措施
+                    if (data.suggestions && data.suggestions.length > 0) {
+                        resultHtml += `<h6>建议措施</h6><ul>`;
+                        data.suggestions.forEach(suggestion => {
+                            resultHtml += `<li>${suggestion}</li>`;
+                        });
+                        resultHtml += `</ul>`;
+                    }
+                    
+                    diagnosticContent.innerHTML = resultHtml;
+                    diagnosticContent.className = 'alert alert-info';
+                } else {
+                    diagnosticContent.innerHTML = `<p>诊断失败: ${data.message || '未知错误'}</p>`;
+                    diagnosticContent.className = 'alert alert-danger';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('diagnostic-result').classList.remove('d-none');
+                const diagnosticContent = document.getElementById('diagnostic-content');
+                diagnosticContent.innerHTML = '<p>诊断过程中发生错误，请稍后再试</p>';
+                diagnosticContent.className = 'alert alert-danger';
+            })
+            .finally(() => {
+                // 隐藏加载动画
+                document.getElementById('diagnostic-spinner').classList.add('d-none');
+                document.getElementById('diagnostic-submit').removeAttribute('disabled');
+            });
         }
-    }
-    
-    // 获取状态文本
-    function getStatusText(status) {
-        switch(status) {
-            case 'online': return '在线';
-            case 'offline': return '离线';
-            case 'warning': return '警告';
-            case 'error': return '错误';
-            default: return status;
+        
+        // 获取设备状态对应的徽章样式
+        function getBadgeClass(status) {
+            switch(status) {
+                case 'online': return 'bg-success';
+                case 'offline': return 'bg-danger';
+                case 'warning': return 'bg-warning';
+                default: return 'bg-secondary';
+            }
         }
-    }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            switch(status) {
+                case 'online': return '在线';
+                case 'offline': return '离线';
+                case 'warning': return '警告';
+                default: return '未知';
+            }
+        }
+    });
 </script>
 <style>
     .chat-container {
@@ -380,18 +266,18 @@
     .chat-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 1rem;
+        padding: 10px;
         display: flex;
         flex-direction: column;
     }
     
     .chat-input {
         border-top: 1px solid #dee2e6;
-        padding: 0.75rem;
+        padding: 10px;
     }
     
     .message {
-        margin-bottom: 1rem;
+        margin-bottom: 10px;
         max-width: 80%;
     }
     
@@ -404,18 +290,23 @@
     }
     
     .message-content {
-        padding: 0.75rem;
-        border-radius: 0.5rem;
+        padding: 10px;
+        border-radius: 0.75rem;
     }
     
     .message.user .message-content {
         background-color: #007bff;
-        color: #fff;
+        color: white;
+        border-bottom-right-radius: 0;
     }
     
     .message.assistant .message-content {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
+        background-color: #f0f0f0;
+        border-bottom-left-radius: 0;
+    }
+    
+    .message p {
+        margin-bottom: 0;
     }
 </style>
 {% endblock %}

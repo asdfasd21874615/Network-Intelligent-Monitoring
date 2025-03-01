@@ -782,6 +782,34 @@ def network_analysis():
                            devices=devices,
                            suggestions=optimization_suggestions)
 
+# 路由: 设置页面
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    # 默认系统设置
+    default_settings = {
+        'refresh_interval': 30,
+        'snmp_timeout': 5,
+        'ssh_timeout': 10,
+        'retention_days': 30,
+        'dashboard_auto_refresh': True,
+        'notify_warning': True,
+        'notify_info': False,
+        'browser_notifications': True,
+        'dark_mode': False,
+        'theme_color': 'blue',
+        'dashboard_layout': 'standard'
+    }
+    
+    # TODO: 实际情况中，应该从数据库加载真实的系统设置
+    # 这里暂时使用默认值
+    
+    return render_template('settings.html', 
+                          title='系统设置',
+                          user=current_user,
+                          settings=default_settings,
+                          backups=[])  # 暂时没有备份数据
+
 # 数据收集后台任务
 def collect_data():
     with app.app_context():
