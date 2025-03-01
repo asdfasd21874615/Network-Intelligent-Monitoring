@@ -12,5 +12,11 @@
 告警中心
 ![image](https://github.com/user-attachments/assets/d01fa988-de3d-45d3-b7b8-ea84b897e8d0)
 设备详细
+![image](https://github.com/user-attachments/assets/c1084429-8f7e-4420-b10e-2f1305a9e324)
+ai助手
+![image](https://github.com/user-attachments/assets/1903d95f-4ee1-4cc0-b20e-4ad99a887fff)
+网络分析与建议
+![image](https://github.com/user-attachments/assets/a08cf620-964a-430b-9bd5-665bd8a3cad4)
+设置
 ![Uploading image.png…]()
 
