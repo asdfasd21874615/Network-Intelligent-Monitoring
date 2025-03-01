@@ -14,6 +14,16 @@ class Config:
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # SQLite连接选项，防止并发写入导致数据库锁定
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'connect_args': {
+            'timeout': 30,  # 连接超时时间（秒）
+            'check_same_thread': False  # 允许在不同线程中使用同一连接
+        },
+        'pool_recycle': 3600,  # 连接池回收时间（秒）
+        'pool_pre_ping': True  # 在使用连接前先ping一下，确保连接可用
+    }
+    
     # 监控配置
     COLLECTION_INTERVAL = int(os.environ.get('COLLECTION_INTERVAL') or 30)  # 数据收集间隔（秒）
     

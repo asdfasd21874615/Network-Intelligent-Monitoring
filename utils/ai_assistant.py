@@ -1,6 +1,7 @@
 import requests
 import json
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ class DeepSeekAssistant:
         初始化DeepSeek助手
         
         Args:
-            api_key: sk-5f412e5a29a541f3b04c1f8cb93779e7
+            api_key: API密钥
             api_url: DeepSeek API URL
         """
         logger.info("初始化DeepSeek AI助手")
@@ -46,8 +47,9 @@ class DeepSeekAssistant:
         try:
             logger.info(f"向DeepSeek发送查询: {query}")
             
-            if not self.api_key:
-                logger.warning("未配置DeepSeek API密钥，返回模拟回复")
+            # 检查API密钥 - 如果不可用则使用模拟响应
+            if not self.api_key or self.api_key == "your-deepseek-api-key":
+                logger.warning("未配置有效的DeepSeek API密钥，使用本地模拟回复")
                 return self._mock_response(query, context)
             
             # 准备消息
@@ -76,19 +78,49 @@ class DeepSeekAssistant:
                 "Authorization": f"Bearer {self.api_key}"
             }
             
-            response = requests.post(self.api_url, headers=headers, data=json.dumps(data), timeout=30)
+            # 添加超时和重试
+            max_retries = 2
+            retry_count = 0
             
-            # 检查响应
-            if response.status_code == 200:
-                result = response.json()
-                return result["choices"][0]["message"]["content"]
-            else:
-                logger.error(f"DeepSeek API请求失败: {response.status_code} - {response.text}")
-                return f"抱歉，我无法回答您的问题。请稍后再试。(错误码: {response.status_code})"
+            while retry_count <= max_retries:
+                try:
+                    response = requests.post(
+                        self.api_url, 
+                        headers=headers, 
+                        data=json.dumps(data), 
+                        timeout=15
+                    )
+                    
+                    # 检查响应
+                    if response.status_code == 200:
+                        result = response.json()
+                        return result["choices"][0]["message"]["content"]
+                    elif response.status_code == 429:  # 太多请求
+                        retry_count += 1
+                        wait_time = min(2 ** retry_count, 10)  # 指数退避
+                        logger.warning(f"API请求限制，等待{wait_time}秒后重试")
+                        time.sleep(wait_time)
+                    else:
+                        logger.error(f"DeepSeek API请求失败: {response.status_code} - {response.text}")
+                        # 失败时使用本地模拟响应
+                        return self._mock_response(query, context)
+                
+                except requests.exceptions.Timeout:
+                    retry_count += 1
+                    if retry_count <= max_retries:
+                        logger.warning(f"API请求超时，第{retry_count}次重试")
+                        time.sleep(2)
+                    else:
+                        logger.error("DeepSeek API请求多次超时")
+                        return self._mock_response(query, context)
+                
+                except Exception as e:
+                    logger.error(f"API请求出错: {str(e)}")
+                    return self._mock_response(query, context)
         
         except Exception as e:
             logger.error(f"调用DeepSeek API出错: {str(e)}")
-            return "抱歉，我无法回答您的问题。发生了内部错误，请稍后再试。"
+            return self._mock_response(query, context)
     
     def _mock_response(self, query, context=None):
         """

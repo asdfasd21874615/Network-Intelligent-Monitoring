@@ -1,72 +1,88 @@
-2025-03-01 15:58:10,869 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 15:58:32,390 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 15:59:33,939 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:00:12,475 INFO: 网络监控平台启动 [in c:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:01:36,413 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:01:56,625 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:02:21,157 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:03:41,919 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:04:10,046 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:04:16,016 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:04:21,569 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:04:21,582 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:187]
-2025-03-01 16:04:22,258 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:38]
-2025-03-01 16:04:22,277 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:187]
-2025-03-01 16:07:45,463 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:232]
-2025-03-01 16:07:46,129 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:232]
-2025-03-01 16:10:13,141 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:10:13,154 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:207]
-2025-03-01 16:10:13,906 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:10:13,921 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:207]
-2025-03-01 16:13:31,214 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:13:31,227 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:207]
-2025-03-01 16:13:31,930 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:13:31,944 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:207]
-2025-03-01 16:14:01,971 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:14:02,666 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:14:38,151 ERROR: 数据收集出错: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (1, 1740816793.08973, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 184.0ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:15:08,152 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (1, 1740816793.08973, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 184.0ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:15:26,858 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:15:26,873 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:207]
-2025-03-01 16:15:27,623 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:42]
-2025-03-01 16:15:27,638 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:207]
-2025-03-01 16:15:38,154 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (1, 1740816793.08973, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 184.0ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:15:40,731 ERROR: 数据收集出错: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (2, 1740816860.926593, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 5.8% > 5%', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:15:41,499 ERROR: 数据收集出错: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (2, 1740816861.668941, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 6.0% > 5%', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:16:08,154 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (1, 1740816793.08973, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 184.0ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:16:10,732 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (2, 1740816860.926593, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 5.8% > 5%', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:16:11,500 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (2, 1740816861.668941, 'high_packet_loss', '设备 边界路由器 (192.168.1.2) 丢包率过高: 6.0% > 5%', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:16:36,137 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
-2025-03-01 16:16:38,155 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (1, 1740816793.08973, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 184.0ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:252]
+2025-03-01 17:34:37,675 ERROR: Exception on /devices [GET] [in C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py:1414]
+Traceback (most recent call last):
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\Desktop\demo1\实例3\app.py", line 107, in devices
+    return render_template('devices.html', title='设备管理', devices=all_devices)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 151, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 132, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 1301, in render
+    self.environment.handle_exception()
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 936, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\28637\Desktop\demo1\实例3\templates\devices.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "C:\Users\28637\Desktop\demo1\实例3\templates\base.html", line 66, in top-level template code
+    <a class="nav-link {% if request.path == url_for('settings') %}active{% endif %}" href="{{ url_for('settings') }}">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1697, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1686, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\werkzeug\routing\map.py", line 950, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'settings'. Did you mean 'static' instead?
+2025-03-01 17:34:39,763 ERROR: Exception on /alerts [GET] [in C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py:1414]
+Traceback (most recent call last):
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\Desktop\demo1\实例3\app.py", line 336, in alerts
+    return render_template('alerts.html', title='警报中心', alerts=all_alerts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 151, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 132, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 1301, in render
+    self.environment.handle_exception()
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 936, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\28637\Desktop\demo1\实例3\templates\alerts.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "C:\Users\28637\Desktop\demo1\实例3\templates\base.html", line 66, in top-level template code
+    <a class="nav-link {% if request.path == url_for('settings') %}active{% endif %}" href="{{ url_for('settings') }}">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1697, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1686, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\werkzeug\routing\map.py", line 950, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'settings'. Did you mean 'static' instead?

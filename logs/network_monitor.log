@@ -1,4 +1,4 @@
-2025-03-01 17:24:56,043 ERROR: Exception on /index [GET] [in C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py:1414]
+2025-03-01 17:34:41,205 ERROR: Exception on /devices [GET] [in C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py:1414]
 Traceback (most recent call last):
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
     response = self.full_dispatch_request()
@@ -15,9 +15,9 @@ Traceback (most recent call last):
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
     return current_app.ensure_sync(func)(*args, **kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\Desktop\demo1\实例3\app.py", line 77, in index
-    return render_template('index.html', title='网络监控平台')
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\Desktop\demo1\实例3\app.py", line 107, in devices
+    return render_template('devices.html', title='设备管理', devices=all_devices)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 151, in render_template
     return _render(app, template, context)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -28,10 +28,10 @@ Traceback (most recent call last):
     self.environment.handle_exception()
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 936, in handle_exception
     raise rewrite_traceback_stack(source=source)
-  File "C:\Users\28637\Desktop\demo1\实例3\templates\index.html", line 1, in top-level template code
+  File "C:\Users\28637\Desktop\demo1\实例3\templates\devices.html", line 1, in top-level template code
     {% extends "base.html" %}
   File "C:\Users\28637\Desktop\demo1\实例3\templates\base.html", line 66, in top-level template code
-    <a class="nav-link" href="{{ url_for('settings') }}">
+    <a class="nav-link {% if request.path == url_for('settings') %}active{% endif %}" href="{{ url_for('settings') }}">
     ^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1697, in url_for
     return self.handle_url_build_error(error, endpoint, values)
@@ -42,7 +42,7 @@ Traceback (most recent call last):
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\werkzeug\routing\map.py", line 950, in build
     raise BuildError(endpoint, values, method, self)
 werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'settings'. Did you mean 'static' instead?
-2025-03-01 17:24:57,402 ERROR: Exception on /index [GET] [in C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py:1414]
+2025-03-01 17:34:46,622 ERROR: Exception on /network_analysis [GET] [in C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py:1414]
 Traceback (most recent call last):
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
     response = self.full_dispatch_request()
@@ -59,9 +59,9 @@ Traceback (most recent call last):
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
     return current_app.ensure_sync(func)(*args, **kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\Desktop\demo1\实例3\app.py", line 77, in index
-    return render_template('index.html', title='网络监控平台')
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\28637\Desktop\demo1\实例3\app.py", line 779, in network_analysis
+    return render_template('network_analysis.html',
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 151, in render_template
     return _render(app, template, context)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -72,10 +72,10 @@ Traceback (most recent call last):
     self.environment.handle_exception()
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 936, in handle_exception
     raise rewrite_traceback_stack(source=source)
-  File "C:\Users\28637\Desktop\demo1\实例3\templates\index.html", line 1, in top-level template code
+  File "C:\Users\28637\Desktop\demo1\实例3\templates\network_analysis.html", line 1, in top-level template code
     {% extends "base.html" %}
   File "C:\Users\28637\Desktop\demo1\实例3\templates\base.html", line 66, in top-level template code
-    <a class="nav-link" href="{{ url_for('settings') }}">
+    <a class="nav-link {% if request.path == url_for('settings') %}active{% endif %}" href="{{ url_for('settings') }}">
     ^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1697, in url_for
     return self.handle_url_build_error(error, endpoint, values)
@@ -86,28 +86,28 @@ Traceback (most recent call last):
   File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\werkzeug\routing\map.py", line 950, in build
     raise BuildError(endpoint, values, method, self)
 werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'settings'. Did you mean 'static' instead?
-2025-03-01 17:25:12,311 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
-2025-03-01 17:25:12,340 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:926]
-2025-03-01 17:25:13,126 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
-2025-03-01 17:25:13,145 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:926]
-2025-03-01 17:25:43,288 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
-2025-03-01 17:25:43,308 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:788]
-2025-03-01 17:28:11,244 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:971]
-2025-03-01 17:28:22,886 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
-2025-03-01 17:28:22,906 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:788]
-2025-03-01 17:28:23,713 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
-2025-03-01 17:28:23,731 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:788]
-2025-03-01 17:30:12,447 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
-2025-03-01 17:30:12,473 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:794]
-2025-03-01 17:31:22,788 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
-2025-03-01 17:31:22,808 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:816]
-2025-03-01 17:32:11,743 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:833]
-2025-03-01 17:33:06,613 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:833]
-2025-03-01 17:33:32,519 ERROR: 数据收集出错: (sqlite3.OperationalError) database is locked
+2025-03-01 17:34:57,432 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
+2025-03-01 17:34:57,450 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:816]
+2025-03-01 17:34:58,266 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
+2025-03-01 17:34:58,285 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:816]
+2025-03-01 17:36:24,752 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
+2025-03-01 17:36:24,771 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:818]
+2025-03-01 17:36:34,813 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
+2025-03-01 17:36:34,833 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:818]
+2025-03-01 17:37:56,480 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:861]
+2025-03-01 17:38:44,431 ERROR: 数据收集出错: (sqlite3.OperationalError) database is locked
 [SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740821507.680096, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 137.8ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:861]
-2025-03-01 17:34:02,521 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
+[parameters: (1, 1740821819.64213, 'high_packet_loss', '设备 核心交换机 (192.168.1.1) 丢包率过高: 7.8% > 5%', 'warning', 0, None, None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) [in C:\Users\28637\Desktop\demo1\实例3\app.py:863]
+2025-03-01 17:38:51,349 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:861]
+2025-03-01 17:39:14,434 ERROR: 数据收集出错: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) database is locked
 [SQL: INSERT INTO alert (device_id, timestamp, alert_type, message, severity, resolved, resolved_time, resolved_by, resolution_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]
-[parameters: (1, 1740821507.680096, 'high_latency', '设备 核心交换机 (192.168.1.1) 延迟过高: 137.8ms > 100ms', 'warning', 0, None, None, None)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:861]
+[parameters: (1, 1740821819.64213, 'high_packet_loss', '设备 核心交换机 (192.168.1.1) 丢包率过高: 7.8% > 5%', 'warning', 0, None, None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a) [in C:\Users\28637\Desktop\demo1\实例3\app.py:863]
+2025-03-01 17:39:29,709 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
+2025-03-01 17:39:29,729 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:854]
+2025-03-01 17:39:46,156 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:861]
+2025-03-01 17:41:02,301 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:44]
+2025-03-01 17:41:02,319 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:862]
+2025-03-01 17:41:16,395 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:45]
+2025-03-01 17:41:16,414 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:863]
