@@ -8,5 +8,9 @@
 设备管理中心
 ![image](https://github.com/user-attachments/assets/37def621-6076-4ee5-83de-633293fefa14)
 添加设备
+![image](https://github.com/user-attachments/assets/8c40448e-3c41-49b6-b62d-038ef00d0995)
+告警中心
+![image](https://github.com/user-attachments/assets/d01fa988-de3d-45d3-b7b8-ea84b897e8d0)
+设备详细
 ![Uploading image.png…]()
 
