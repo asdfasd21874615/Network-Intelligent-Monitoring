@@ -22,6 +22,7 @@ from utils.alert_manager import AlertManager
 from utils.ai_assistant import DeepSeekAssistant
 from utils.ssh_connector import SSHConnector
 from utils.network_analyzer import NetworkAnalyzer
+from utils.redis_cache import redis_cache
 
 # 配置日志
 if not os.path.exists('logs'):
@@ -38,6 +39,9 @@ db.init_app(app)
 
 # 初始化Moment
 moment = Moment(app)
+
+# 初始化Redis缓存
+redis_cache.init_app(app)
 
 # 添加日志处理器
 app.logger.addHandler(file_handler)
@@ -411,40 +415,46 @@ def ask_assistant():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # API: 获取仪表盘数据
-@app.route('/api/dashboard/summary')
+@app.route('/api/dashboard/summary', methods=['GET'])
 @login_required
+@redis_cache.cached('dashboard_summary', ttl=60)  # 缓存1分钟
 def get_dashboard_summary():
-    # 获取设备状态统计
-    total_devices = Device.query.count()
-    
-    # 设置固定值用于展示
-    online_devices = 18
-    warning_devices = 5
-    error_devices = 2
-    offline_devices = 1
-    
-    # 未解决的警报
-    unresolved_alerts = Alert.query.filter_by(resolved=False).count()
-    
-    # 返回汇总数据
-    result = {
-        'devices': {
-            'total': total_devices,
-            'online': online_devices,
-            'warning': warning_devices,
-            'error': error_devices,
-            'offline': offline_devices
-        },
-        'alerts': {
-            'unresolved': unresolved_alerts
+    try:
+        # 获取设备状态统计
+        total_devices = Device.query.count()
+        
+        # 设置固定值用于展示
+        online_devices = 18
+        warning_devices = 5
+        error_devices = 2
+        offline_devices = 1
+        
+        # 未解决的警报
+        unresolved_alerts = Alert.query.filter_by(resolved=False).count()
+        
+        # 返回汇总数据
+        result = {
+            'devices': {
+                'total': total_devices,
+                'online': online_devices,
+                'warning': warning_devices,
+                'error': error_devices,
+                'offline': offline_devices
+            },
+            'alerts': {
+                'unresolved': unresolved_alerts
+            }
         }
-    }
-    
-    return jsonify(result)
+        
+        return jsonify(result)
+    except Exception as e:
+        app.logger.error(f"获取仪表盘数据失败: {str(e)}")
+        return jsonify({'success': False, 'message': '获取仪表盘数据失败'})
 
 # API: 获取网络性能趋势数据
-@app.route('/api/dashboard/performance')
+@app.route('/api/dashboard/performance', methods=['GET'])
 @login_required
+@redis_cache.cached('performance_trends', ttl=300)  # 缓存5分钟
 def get_performance_trends():
     time_range = request.args.get('range', 'day')  # hour, day, week
     
@@ -503,8 +513,9 @@ def get_performance_trends():
     return jsonify(result)
 
 # API: 获取设备状态分布数据
-@app.route('/api/dashboard/device-status')
+@app.route('/api/dashboard/device-status', methods=['GET'])
 @login_required
+@redis_cache.cached('device_status', ttl=300)  # 缓存5分钟
 def get_device_status_distribution():
     # 设置固定值用于展示
     online_count = 18
@@ -794,6 +805,7 @@ def detect_device_type(device_id):
 # API: 获取设备性能分析
 @app.route('/api/device/<int:device_id>/analysis', methods=['GET'])
 @login_required
+@redis_cache.cached('device_analysis', ttl=1800)  # 缓存30分钟
 def get_device_analysis(device_id):
     """获取特定设备的性能分析和建议"""
     time_range = request.args.get('time_range', 'day')
@@ -861,66 +873,170 @@ def settings():
                           settings=default_settings,
                           backups=[])  # 暂时没有备份数据
 
+# 会话管理：使用Redis存储会话数据
+@app.route('/api/session/save', methods=['POST'])
+@login_required
+def save_session_data():
+    """保存用户会话数据到Redis"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': '无效的请求数据'})
+        
+        user_id = current_user.id
+        session_key = f'user_session:{user_id}'
+        
+        # 保存到Redis，有效期24小时
+        redis_cache.set(session_key, data, ttl=86400)
+        
+        return jsonify({'success': True, 'message': '会话数据保存成功'})
+    except Exception as e:
+        app.logger.error(f"保存会话数据失败: {str(e)}")
+        return jsonify({'success': False, 'message': '保存会话数据失败'})
+
+@app.route('/api/session/load', methods=['GET'])
+@login_required
+def load_session_data():
+    """从Redis加载用户会话数据"""
+    try:
+        user_id = current_user.id
+        session_key = f'user_session:{user_id}'
+        
+        # 从Redis获取数据
+        data = redis_cache.get(session_key)
+        
+        if data:
+            return jsonify({'success': True, 'data': data})
+        else:
+            return jsonify({'success': False, 'message': '未找到会话数据'})
+    except Exception as e:
+        app.logger.error(f"加载会话数据失败: {str(e)}")
+        return jsonify({'success': False, 'message': '加载会话数据失败'})
+
+@app.route('/api/cache/clear', methods=['POST'])
+@login_required
+def clear_cache():
+    """清除所有缓存或指定类型的缓存"""
+    try:
+        data = request.get_json()
+        cache_type = data.get('type', 'all') if data else 'all'
+        
+        if cache_type == 'all':
+            # 清除所有缓存
+            redis_cache.clear()
+            message = '所有缓存已清除'
+        elif cache_type == 'dashboard':
+            # 清除仪表盘相关缓存
+            patterns = ['dashboard_*', 'performance_*', 'device_status']
+            for pattern in patterns:
+                redis_cache.clear(pattern)
+            message = '仪表盘缓存已清除'
+        elif cache_type == 'device':
+            # 清除设备相关缓存
+            device_id = data.get('device_id')
+            if device_id:
+                patterns = [f'device_data:{device_id}:*', f'device_analysis:{device_id}']
+                for pattern in patterns:
+                    redis_cache.clear(pattern)
+                message = f'设备 ID {device_id} 的缓存已清除'
+            else:
+                redis_cache.clear('device_*')
+                message = '所有设备缓存已清除'
+        else:
+            return jsonify({'success': False, 'message': '无效的缓存类型'})
+        
+        return jsonify({'success': True, 'message': message})
+    except Exception as e:
+        app.logger.error(f"清除缓存失败: {str(e)}")
+        return jsonify({'success': False, 'message': '清除缓存失败'})
+
 # 数据收集后台任务
 def collect_data():
     with app.app_context():
-        app.logger.info('数据收集后台任务启动')
+        app.logger.info("开始数据收集后台任务")
         while True:
             try:
                 devices = Device.query.all()
                 for device in devices:
-                    # 根据设备类型选择不同的收集方法
-                    if device.snmp_community:
+                    try:
                         # 使用SNMP收集数据
-                        data = snmp_collector.collect(device.ip_address, device.snmp_community)
-                    else:
-                        # 使用主动代理收集数据
-                        data = active_agent.collect(device.ip_address)
-                    
-                    # 检查被动代理数据
-                    passive_data = passive_agent.get_data(device.ip_address)
-                    if passive_data:
-                        # 合并数据
-                        data.update(passive_data)
-                    
-                    # 存储数据
-                    network_data = NetworkData(
-                        device_id=device.id,
-                        cpu_usage=data.get('cpu_usage', 0),
-                        memory_usage=data.get('memory_usage', 0),
-                        bandwidth_usage=data.get('bandwidth_usage', 0),
-                        packet_loss=data.get('packet_loss', 0),
-                        latency=data.get('latency', 0),
-                        timestamp=datetime.now().timestamp()
-                    )
-                    db.session.add(network_data)
-                    
-                    # 检查告警条件
-                    alerts = alert_manager.check_alerts(device, data)
-                    for alert in alerts:
-                        new_alert = Alert(
-                            device_id=device.id,
-                            alert_type=alert['type'],
-                            message=alert['message'],
-                            severity=alert['severity'],
-                            timestamp=datetime.now().timestamp()
-                        )
-                        db.session.add(new_alert)
+                        if device.snmp_community:
+                            data = snmp_collector.collect_data(device.ip_address, device.snmp_community, device.snmp_port)
+                            
+                            # 如果数据收集失败，尝试使用主动探测
+                            if not data or not data.get('success', False):
+                                data = active_agent.ping_device(device.ip_address)
+                        else:
+                            # 如果未配置SNMP，使用主动探测
+                            data = active_agent.ping_device(device.ip_address)
+                        
+                        # 更新设备状态
+                        if data.get('success', False):
+                            device.status = 'online'
+                            device.last_seen = time.time()
+                            
+                            # 创建监控数据记录
+                            network_data = NetworkData(
+                                device_id=device.id,
+                                timestamp=time.time(),
+                                cpu_usage=data.get('cpu_usage', 0),
+                                memory_usage=data.get('memory_usage', 0),
+                                bandwidth_usage=data.get('bandwidth_usage', 0),
+                                packet_loss=data.get('packet_loss', 0),
+                                latency=data.get('latency', 0),
+                                interface_status=json.dumps(data.get('interfaces', {})),
+                                system_uptime=data.get('system_uptime', 0),
+                                error_count=data.get('error_count', 0)
+                            )
+                            
+                            db.session.add(network_data)
+                            
+                            # 检查告警阈值并创建告警
+                            alert_manager.check_thresholds(device, data)
+                        else:
+                            # 如果连接失败，将设备状态设置为离线
+                            if device.status != 'offline':
+                                device.status = 'offline'
+                                
+                                # 创建设备离线告警
+                                alert_manager.create_alert(
+                                    device_id=device.id,
+                                    alert_type='device_offline',
+                                    message=f'设备 {device.name} ({device.ip_address}) 无法连接',
+                                    severity='error'
+                                )
+                        
+                        # 清除设备相关缓存
+                        cache_keys = [
+                            f'device_data:{device.id}:hour',
+                            f'device_data:{device.id}:day',
+                            f'device_data:{device.id}:week',
+                            f'device_data:{device.id}:month',
+                            f'device_analysis:{device.id}'
+                        ]
+                        for key in cache_keys:
+                            redis_cache.delete(key)
+                        
+                        # 提交数据库更改
+                        db.session.commit()
+                    except Exception as e:
+                        db.session.rollback()
+                        app.logger.error(f"设备 {device.name} ({device.ip_address}) 数据收集失败: {str(e)}")
                 
-                try:
-                    db.session.commit()
-                except sqlalchemy.exc.OperationalError as e:
-                    db.session.rollback()
-                    app.logger.error(f'数据收集时数据库错误: {str(e)}')
-                    # 等待一段时间让数据库锁释放
-                    time.sleep(5)
+                # 清除仪表盘相关缓存，确保获取最新数据
+                dashboard_cache_keys = [
+                    'dashboard_summary',
+                    'performance_trends',
+                    'device_status'
+                ]
+                for key in dashboard_cache_keys:
+                    redis_cache.delete(key)
+                
+                # 等待下一个收集周期
+                time.sleep(app.config['COLLECTION_INTERVAL'])
             except Exception as e:
-                app.logger.error(f'数据收集出错: {str(e)}')
-                # 确保任何异常都会回滚会话
-                db.session.rollback()
-            
-            # 等待30秒再次收集
-            time.sleep(30)
+                app.logger.error(f"数据收集循环出错: {str(e)}")
+                time.sleep(10)  # 出错后等待10秒再继续
 
 # 创建数据库表并启动后台任务
 def initialize():

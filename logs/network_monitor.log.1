@@ -1,97 +1,55 @@
-2025-03-01 18:04:12,193 ERROR: Exception on /alerts [GET] [in C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py:1414]
-Traceback (most recent call last):
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
-    response = self.full_dispatch_request()
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1486, in full_dispatch_request
-    rv = self.handle_user_exception(e)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-         ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\Desktop\demo1\实例3\app.py", line 336, in alerts
-    # 删除设备相关的所有监控数据
-       ^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-         ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 1301, in render
-    self.environment.handle_exception()
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 936, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\28637\Desktop\demo1\实例3\templates\alerts.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\28637\Desktop\demo1\实例3\templates\base.html", line 66, in top-level template code
-    <a class="nav-link {% if request.path == url_for('settings') %}active{% endif %}" href="{{ url_for('settings') }}">
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1697, in url_for
-    return self.handle_url_build_error(error, endpoint, values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 1686, in url_for
-    rv = url_adapter.build(  # type: ignore[union-attr]
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\28637\AppData\Local\Programs\Python\Python311\Lib\site-packages\werkzeug\routing\map.py", line 950, in build
-    raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'settings'. Did you mean 'static' instead?
-2025-03-01 18:07:45,620 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:45]
-2025-03-01 18:07:45,640 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:867]
-2025-03-01 18:07:46,405 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:45]
-2025-03-01 18:07:46,425 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:867]
-2025-03-01 18:08:06,426 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:45]
-2025-03-01 18:08:06,446 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:867]
-2025-03-01 18:10:44,567 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:11:39,349 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:12:34,173 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:12:44,571 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:13:29,009 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:14:04,221 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:14:59,029 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:16:18,563 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:17:13,355 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:18:08,162 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 18:25:21,048 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:45]
-2025-03-01 18:25:21,068 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:867]
-2025-03-01 21:42:55,018 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:45]
-2025-03-01 21:42:55,039 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:867]
-2025-03-01 21:42:55,842 INFO: 网络监控平台启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:45]
-2025-03-01 21:42:55,861 INFO: 数据收集后台任务启动 [in C:\Users\28637\Desktop\demo1\实例3\app.py:867]
-2025-03-01 21:46:18,651 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:47:09,154 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:47:13,486 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:48:08,300 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:48:53,695 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:49:48,542 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:50:43,205 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:51:37,141 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:51:37,887 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:52:31,807 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:54:40,977 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:55:06,390 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:55:35,781 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:56:30,601 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:57:15,642 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:57:25,437 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:58:20,146 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 21:59:14,840 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:01:08,489 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:02:03,336 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:02:58,052 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:03:07,944 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:07:16,527 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:08:11,243 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:08:15,770 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:09:05,908 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:09:35,132 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:10:00,617 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:10:54,864 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:10:55,426 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
-2025-03-01 22:11:50,257 ERROR: 数据收集出错: 'NoneType' object is not subscriptable [in C:\Users\28637\Desktop\demo1\实例3\app.py:918]
+2025-03-03 22:14:41,638 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:14:41,641 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:14:41,642 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:14:41,643 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:14:41,644 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:06,644 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:06,645 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:06,646 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:06,647 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:06,648 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:11,645 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:11,646 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:11,647 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:11,648 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:11,649 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:36,651 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:36,654 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:36,657 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:36,659 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:36,660 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:41,649 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:41,650 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:41,650 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:41,651 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:15:41,652 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:06,661 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:06,662 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:06,663 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:06,664 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:06,665 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:11,653 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:11,654 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:11,654 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:11,655 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:11,656 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:36,667 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:36,668 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:36,670 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:36,670 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:36,671 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:41,658 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:41,659 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:41,660 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:41,661 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:16:41,661 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:06,671 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:06,672 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:06,672 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:06,673 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:06,674 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:11,662 ERROR: 设备 核心交换机 (192.168.1.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:11,663 ERROR: 设备 边界路由器 (192.168.1.2) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:11,664 ERROR: 设备 办公区交换机 (192.168.2.1) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:11,665 ERROR: 设备 Web服务器 (192.168.1.10) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]
+2025-03-03 22:17:11,666 ERROR: 设备 数据库服务器 (192.168.1.11) 数据收集失败: 'SNMPCollector' object has no attribute 'collect_data' [in C:\Users\28637\Desktop\demo1\实例3\app.py:1024]

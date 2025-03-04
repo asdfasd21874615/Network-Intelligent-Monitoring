@@ -24,6 +24,10 @@ class Config:
         'pool_pre_ping': True  # 在使用连接前先ping一下，确保连接可用
     }
     
+    # Redis配置
+    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
+    REDIS_TTL = int(os.environ.get('REDIS_TTL') or 3600)  # 默认缓存过期时间（秒）
+    
     # 监控配置
     COLLECTION_INTERVAL = int(os.environ.get('COLLECTION_INTERVAL') or 30)  # 数据收集间隔（秒）
     
