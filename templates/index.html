@@ -45,6 +45,13 @@
         <div class="card">
             <div class="card-header">
                 网络性能趋势
+                <div class="float-end">
+                    <div class="btn-group" role="group" aria-label="时间范围选择">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="hour-btn">小时</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary active" id="day-btn">天</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="week-btn">周</button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <canvas id="network-performance-chart"></canvas>
@@ -125,17 +132,77 @@
 
 {% block scripts %}
 <script>
-    // 页面加载后初始化图表和数据
+    // 页面加载时初始化
     document.addEventListener('DOMContentLoaded', function() {
+        // 初始化图表
+        initCharts();
+        
         // 更新仪表盘数据
         updateDashboardData();
         
-        // 每30秒更新一次数据
-        setInterval(updateDashboardData, 30000);
+        // 设置时间范围按钮事件监听
+        document.getElementById('hour-btn').addEventListener('click', function() {
+            setActiveTimeRangeButton(this);
+            updatePerformanceChart('hour');
+        });
         
-        // 初始化图表
-        initCharts();
+        document.getElementById('day-btn').addEventListener('click', function() {
+            setActiveTimeRangeButton(this);
+            updatePerformanceChart('day');
+        });
+        
+        document.getElementById('week-btn').addEventListener('click', function() {
+            setActiveTimeRangeButton(this);
+            updatePerformanceChart('week');
+        });
+        
+        // 设置定时刷新（每分钟刷新一次）
+        setInterval(updateDashboardData, 60000);
     });
+    
+    // 设置活动按钮
+    function setActiveTimeRangeButton(activeButton) {
+        // 移除所有按钮的active类
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // 添加active类到当前按钮
+        activeButton.classList.add('active');
+    }
+    
+    // 更新性能图表
+    function updatePerformanceChart(timeRange) {
+        fetch(`/api/dashboard/performance?range=${timeRange}`)
+            .then(response => response.json())
+            .then(data => {
+                // 格式化时间戳为可读形式
+                const labels = data.timestamps.map(ts => {
+                    const date = new Date(ts * 1000);
+                    if (timeRange === 'hour') {
+                        // 对于小时视图，显示时:分
+                        return date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+                    } else if (timeRange === 'day') {
+                        // 对于天视图，显示时:00
+                        return date.getHours() + ':00';
+                    } else {
+                        // 对于周视图，显示月/日
+                        return (date.getMonth() + 1) + '/' + date.getDate();
+                    }
+                });
+                
+                // 更新图表数据
+                networkPerformanceChart.data.labels = labels;
+                networkPerformanceChart.data.datasets[0].data = data.cpu_usage;
+                networkPerformanceChart.data.datasets[1].data = data.memory_usage;
+                networkPerformanceChart.data.datasets[2].data = data.bandwidth_usage;
+                
+                // 更新图表
+                networkPerformanceChart.update();
+            })
+            .catch(error => {
+                console.error('获取性能趋势数据失败:', error);
+            });
+    }
     
     // 更新仪表盘数据
     function updateDashboardData() {
@@ -382,47 +449,19 @@
     
     // 更新图表数据
     function updateChartData() {
-        // 更新网络性能趋势图 - 从API获取数据
-        fetch('/api/dashboard/performance?range=day')
-            .then(response => response.json())
-            .then(data => {
-                // 格式化时间戳为可读形式
-                const labels = data.timestamps.map(ts => {
-                    const date = new Date(ts * 1000);
-                    return date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
-                });
-                
-                // 更新图表数据
-                networkPerformanceChart.data.labels = labels;
-                networkPerformanceChart.data.datasets[0].data = data.cpu_usage;
-                networkPerformanceChart.data.datasets[1].data = data.memory_usage;
-                networkPerformanceChart.data.datasets[2].data = data.bandwidth_usage;
-                
-                // 更新图表
-                networkPerformanceChart.update();
-            })
-            .catch(error => {
-                console.error('获取性能趋势数据失败:', error);
-                // 如果API失败，使用一些模拟数据
-                // 获取当前时间
-                const now = new Date();
-                const timeLabel = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-                
-                // 添加新数据点
-                networkPerformanceChart.data.labels.push(timeLabel);
-                networkPerformanceChart.data.datasets[0].data.push(Math.floor(Math.random() * 30) + 50); // CPU: 50-80%
-                networkPerformanceChart.data.datasets[1].data.push(Math.floor(Math.random() * 30) + 40); // Memory: 40-70%
-                networkPerformanceChart.data.datasets[2].data.push(Math.floor(Math.random() * 40) + 30); // Bandwidth: 30-70%
-                
-                // 保持最近12个数据点
-                if (networkPerformanceChart.data.labels.length > 12) {
-                    networkPerformanceChart.data.labels.shift();
-                    networkPerformanceChart.data.datasets.forEach(dataset => dataset.data.shift());
-                }
-                
-                // 更新图表
-                networkPerformanceChart.update();
-            });
+        // 更新网络性能趋势图 - 使用当前选定的时间范围
+        const activeTimeRangeBtn = document.querySelector('.btn-group .btn.active');
+        let timeRange = 'day'; // 默认为天
+        
+        if (activeTimeRangeBtn) {
+            if (activeTimeRangeBtn.id === 'hour-btn') {
+                timeRange = 'hour';
+            } else if (activeTimeRangeBtn.id === 'week-btn') {
+                timeRange = 'week';
+            }
+        }
+        
+        updatePerformanceChart(timeRange);
         
         // 更新设备状态分布图 - 从API获取数据
         fetch('/api/dashboard/device-status')
