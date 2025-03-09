@@ -1,4 +1,5 @@
 ﻿基于Python+Flask的网络智能监控及大模型分析平台
+   该项目主要使用Flask框架进行后端开发，结合SQLAlchemy进行数据持久化处理，确保了高效的数据库操作和灵活的模型管理。项目通过app.py处理核心业务逻辑，init_db.py和migrate_db.py负责数据库的初始化和迁移，确保数据结构的灵活性和可扩展性。此外，项目集成了多种数据收集方式（如SNMP、主动代理和被动代理），并结合AI助手功能，提升了系统的智能化水平，能够满足实时监控和数据分析的需求。
  主页
 ![image](https://github.com/user-attachments/assets/f74086bc-ef6a-438e-962b-1de6e53c373c)
 注册页面
